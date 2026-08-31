@@ -11,7 +11,7 @@
 
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="manifest" href="./manifest.webmanifest.json">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="application-name" content="Phong Study">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -7886,11 +7886,18 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
 
     /* 📲 PWA INSTALL PROMPT */
     let deferredInstallPrompt = null;
+    let pwaInstallInProgress = false;
 
     function isRunningStandalone() {
       return window.matchMedia?.('(display-mode: standalone)')?.matches
         || window.matchMedia?.('(display-mode: fullscreen)')?.matches
+        || window.matchMedia?.('(display-mode: window-controls-overlay)')?.matches
         || window.navigator.standalone === true;
+    }
+
+    function syncPwaDisplayMode() {
+      document.documentElement.classList.toggle('pwa-standalone', isRunningStandalone());
+      document.body.classList.toggle('pwa-standalone', isRunningStandalone());
     }
 
     function isLikelyAndroid() {
@@ -7927,7 +7934,7 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       card.classList.add('active');
       btn.style.display = 'none';
       status.textContent = isLikelyAndroid()
-        ? 'Chưa nhận được hộp cài tự động. Bạn vẫn có thể cài từ menu Chrome → ⋮ → Thêm vào màn hình chính / Cài đặt ứng dụng.'
+        ? 'Chrome chưa cung cấp nút cài tự động trong phiên này. Bạn vẫn có thể cài từ menu Chrome → ⋮ → Cài đặt ứng dụng / Thêm vào màn hình chính.'
         : 'Chưa có hộp cài tự động. Hãy mở menu trình duyệt để tìm tùy chọn Cài đặt ứng dụng.';
     }
 
@@ -7940,18 +7947,30 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
 
     window.addEventListener('appinstalled', () => {
       deferredInstallPrompt = null;
+      pwaInstallInProgress = false;
+      syncPwaDisplayMode();
       renderPwaInstallState();
       showToast('✅ Đã cài Phong Study thành ứng dụng!');
     });
 
     async function installPWA() {
-      if (!deferredInstallPrompt) {
+      if (pwaInstallInProgress) return;
+      if (isRunningStandalone()) {
         renderPwaInstallState();
+        showToast('✅ Phong Study đã được cài đặt.');
         return;
       }
+      if (!deferredInstallPrompt) {
+        renderPwaInstallState();
+        showPwaInstallHelp();
+        return;
+      }
+
+      pwaInstallInProgress = true;
+      const promptEvent = deferredInstallPrompt;
       try {
-        deferredInstallPrompt.prompt();
-        const choice = await deferredInstallPrompt.userChoice;
+        promptEvent.prompt();
+        const choice = await promptEvent.userChoice;
         if (choice?.outcome === 'accepted') {
           showToast('✅ Đang cài Phong Study...');
         } else {
@@ -7962,13 +7981,14 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
         showToast('Không thể mở hộp cài đặt. Hãy thử lại từ menu Chrome.');
       } finally {
         deferredInstallPrompt = null;
+        pwaInstallInProgress = false;
         renderPwaInstallState();
       }
     }
 
     function showPwaInstallHelp() {
       const text = isLikelyAndroid()
-        ? 'Android/Chrome:\n\n1. Mở website bằng Chrome.\n2. Nhấn ⋮ ở góc trên bên phải.\n3. Chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.\n4. Xác nhận cài đặt.\n\nNếu tùy chọn chưa xuất hiện, hãy mở website bằng HTTPS và kiểm tra manifest.json + sw.js đã được upload cùng thư mục với index.html.'
+        ? 'Android/Chrome:\n\n1. Mở website bằng Chrome.\n2. Nhấn ⋮ ở góc trên bên phải.\n3. Chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.\n4. Xác nhận cài đặt.\n\nNếu tùy chọn chưa xuất hiện, hãy mở website bằng HTTPS và kiểm tra manifest.webmanifest + sw.js đã được upload cùng thư mục với index.html.'
         : 'Hãy mở website bằng Chrome/Edge trên HTTPS. Khi trình duyệt đủ điều kiện, nút “Cài đặt ngay” sẽ xuất hiện và mở hộp cài đặt hệ thống.';
       alert(text);
     }
@@ -7977,9 +7997,24 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
     document.getElementById('pwaInstallHelpBtn')?.addEventListener('click', showPwaInstallHelp);
 
     window.addEventListener('load', () => {
+      syncPwaDisplayMode();
       renderPwaInstallState();
-      setTimeout(renderPwaInstallState, 1200);
+      setTimeout(() => {
+        syncPwaDisplayMode();
+        renderPwaInstallState();
+      }, 1200);
     });
+
+    if (window.matchMedia) {
+      const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+      const fullscreenQuery = window.matchMedia('(display-mode: fullscreen)');
+      const modeListener = () => {
+        syncPwaDisplayMode();
+        renderPwaInstallState();
+      };
+      standaloneQuery.addEventListener?.('change', modeListener);
+      fullscreenQuery.addEventListener?.('change', modeListener);
+    }
 
     /* SETTINGS + API KEY MODAL EVENTS */
     function syncSettingsModal() {
