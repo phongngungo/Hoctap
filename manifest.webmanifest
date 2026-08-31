@@ -1,19 +1,16 @@
 {
-  "name": "Phong Study - AI NotebookLM & SRS",
+  "id": "./",
+  "name": "Phong Study",
   "short_name": "Phong Study",
-  "description": "Trợ lý học tập thông minh với SRS, Flashcard, AI, lịch học và kho tài liệu.",
+  "description": "Ứng dụng học tập với Flashcard SRS, AI, lịch học và kho tài liệu.",
   "lang": "vi",
   "dir": "ltr",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "orientation": "portrait-primary",
   "background_color": "#F8FAFC",
   "theme_color": "#2563EB",
+  "orientation": "any",
   "prefer_related_applications": false,
   "icons": [
     {
