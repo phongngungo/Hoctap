@@ -3943,13 +3943,35 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       return String(raw || '').trim();
     }
 
+    function isValidGeminiApiKey(key) {
+      const k = normalizeGeminiApiKey(key);
+      // Hỗ trợ cả Standard key cũ (AIza...) và Authorization key mới (AQ....).
+      return /^(?:AIza[0-9A-Za-z_-]{20,}|AQ\.[0-9A-Za-z_-]{20,})$/.test(k);
+    }
+
     function parseBulkGeminiApiKeys(raw) {
       const text = String(raw || '');
-      return [...new Set(text
-        .split(/[\s,;]+/)
-        .map(normalizeGeminiApiKey)
-        .filter(k => /^AIza[0-9A-Za-z_-]{20,}$/.test(k))
-      )];
+      if (!text.trim()) return [];
+
+      // Tìm trực tiếp các key trong mọi nội dung paste, kể cả dạng:
+      // key=..., "AQ....", JSON-ish, URL/query hoặc nhiều key trên nhiều dòng.
+      const found = [];
+      const matches = text.match(/(?:AIza[0-9A-Za-z_-]{20,}|AQ\.[0-9A-Za-z_-]{20,})/g) || [];
+      for (const match of matches) {
+        const key = normalizeGeminiApiKey(match);
+        if (isValidGeminiApiKey(key)) found.push(key);
+      }
+
+      // Fallback: mỗi token là một key có thể kèm dấu ngoặc/quote.
+      if (!found.length) {
+        text.split(/[\s,;]+/)
+          .map(token => token.replace(/^[\"'`(<\[]+|[\"'`)>\],]+$/g, ''))
+          .map(normalizeGeminiApiKey)
+          .filter(isValidGeminiApiKey)
+          .forEach(k => found.push(k));
+      }
+
+      return [...new Set(found)];
     }
 
     function getStoredGeminiApiKeys() {
@@ -4044,11 +4066,14 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         const apiKey = keys[keyIndex];
         if (!apiKey || isApiKeyTemporarilyExhausted(apiKey, model)) continue;
         attempted++;
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
         try {
           const res = await fetch(endpoint, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': apiKey
+            },
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: GEMINI_MASTER_SYSTEM_INSTRUCTION }] },
               generationConfig: { temperature: route.temperature ?? 0.2 },
@@ -8052,15 +8077,31 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
 
     document.getElementById('saveApiKeyBtn').addEventListener('click', () => {
       const input = document.getElementById('apiKeyInput');
-      const pastedKeys = parseBulkGeminiApiKeys(input?.value);
-      let keys = getStoredGeminiApiKeys();
-      if (pastedKeys.length) keys = saveGeminiApiKeys([...keys, ...pastedKeys]);
-      else saveGeminiApiKeys(keys);
+      const rawText = String(input?.value || '');
+      const pastedKeys = parseBulkGeminiApiKeys(rawText);
+      const existingKeys = getStoredGeminiApiKeys();
+
+      // Không bao giờ coi một lần paste lỗi là yêu cầu xoá toàn bộ key.
+      if (rawText.trim() && !pastedKeys.length) {
+        showToast('⚠️ Không nhận diện được API Key. Hỗ trợ cả key AIza... và AQ....');
+        input?.focus();
+        return;
+      }
+
+      const keys = pastedKeys.length
+        ? saveGeminiApiKeys([...existingKeys, ...pastedKeys])
+        : existingKeys;
+
       input.value = '';
       renderApiKeysModal();
       document.getElementById('apiKeyModal').classList.remove('active');
-      if (keys.length) showToast(`✅ Đã lưu ${keys.length} API Key. App sẽ tự xoay khi hết quota.`);
-      else showToast('Đã xoá toàn bộ API Key.');
+      if (pastedKeys.length) {
+        showToast(`✅ Đã lưu ${pastedKeys.length} API Key mới. Tổng cộng ${keys.length} API Key.`);
+      } else if (keys.length) {
+        showToast(`✅ Không thay đổi. Hiện có ${keys.length} API Key.`);
+      } else {
+        showToast('Chưa có API Key nào được lưu.');
+      }
       syncSettingsModal();
     });
 
