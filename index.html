@@ -11,7 +11,7 @@
 
   <link rel="icon" type="image/png" href="icon-192.png">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="manifest" href="./manifest.json">
   <meta name="application-name" content="Phong Study">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -253,6 +253,26 @@
       margin-bottom: 16px;
       box-shadow: var(--shadow-card);
     }
+
+    /* PWA INSTALL */
+    .pwa-install-card {
+      display:none;
+      background:linear-gradient(135deg,var(--primary-light),var(--surface));
+      border:1.5px solid var(--primary);
+      border-radius:14px;
+      padding:13px;
+      margin-bottom:12px;
+    }
+    .pwa-install-card.active { display:block; }
+    .pwa-install-head { display:flex; align-items:center; gap:10px; }
+    .pwa-install-icon {
+      width:42px; height:42px; border-radius:12px; flex:0 0 42px;
+      background:var(--primary); color:#fff; display:flex; align-items:center; justify-content:center;
+      font-size:20px; box-shadow:0 5px 14px rgba(37,99,235,.2);
+    }
+    .pwa-install-title { font-size:14px; font-weight:850; }
+    .pwa-install-sub { font-size:12px; color:var(--text-muted); margin-top:3px; line-height:1.4; }
+    .pwa-install-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 
     /* NOTIFICATION PERMISSION BANNER */
     .notif-permission-bar {
@@ -2201,9 +2221,23 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
         <div>
           <h3 style="font-size:18px;font-weight:800;margin:0;">⚙️ Cài đặt ứng dụng</h3>
-          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Thông báo học, API Gemini và sao lưu dữ liệu.</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">Thông báo học, API Gemini, cài đặt app và sao lưu dữ liệu.</div>
         </div>
         <button type="button" id="closeSettingsBtn" class="icon-btn" aria-label="Đóng">✕</button>
+      </div>
+
+      <div id="pwaInstallCard" class="pwa-install-card" aria-live="polite">
+        <div class="pwa-install-head">
+          <div class="pwa-install-icon">📲</div>
+          <div style="min-width:0;">
+            <div class="pwa-install-title">Cài Phong Study thành ứng dụng</div>
+            <div id="pwaInstallStatus" class="pwa-install-sub">Cài trực tiếp lên Android để mở như một ứng dụng riêng.</div>
+          </div>
+        </div>
+        <div class="pwa-install-actions">
+          <button type="button" id="installPwaBtn" class="btn btn-primary">📲 Cài đặt ngay</button>
+          <button type="button" id="pwaInstallHelpBtn" class="btn btn-secondary btn-small">ℹ️ Hướng dẫn</button>
+        </div>
       </div>
 
       <div style="border:1px solid var(--border);background:var(--surface-soft);border-radius:14px;padding:13px;margin-bottom:12px;">
@@ -7848,6 +7882,103 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       }
       document.getElementById('geminiPasteTextModal').classList.remove('active');
       attachKnowledgeToCurrentSession(title, content, 'Văn bản nạp trực tiếp');
+    });
+
+    /* 📲 PWA INSTALL PROMPT */
+    let deferredInstallPrompt = null;
+
+    function isRunningStandalone() {
+      return window.matchMedia?.('(display-mode: standalone)')?.matches
+        || window.matchMedia?.('(display-mode: fullscreen)')?.matches
+        || window.navigator.standalone === true;
+    }
+
+    function isLikelyAndroid() {
+      return /Android/i.test(navigator.userAgent || '');
+    }
+
+    function isPwaInstallAvailable() {
+      return !!deferredInstallPrompt && !isRunningStandalone();
+    }
+
+    function renderPwaInstallState() {
+      const card = document.getElementById('pwaInstallCard');
+      const btn = document.getElementById('installPwaBtn');
+      const status = document.getElementById('pwaInstallStatus');
+      if (!card || !btn || !status) return;
+
+      if (isRunningStandalone()) {
+        card.classList.add('active');
+        btn.style.display = 'none';
+        status.textContent = '✅ Phong Study đang chạy ở chế độ ứng dụng.';
+        return;
+      }
+
+      if (isPwaInstallAvailable()) {
+        card.classList.add('active');
+        btn.style.display = 'inline-flex';
+        status.textContent = isLikelyAndroid()
+          ? 'Chrome đã sẵn sàng cho phép cài app trực tiếp lên màn hình chính.'
+          : 'Trình duyệt đã sẵn sàng cho phép cài app.';
+        return;
+      }
+
+      // Hiện card ngay cả khi Chrome chưa phát prompt để người dùng biết cách cài thủ công.
+      card.classList.add('active');
+      btn.style.display = 'none';
+      status.textContent = isLikelyAndroid()
+        ? 'Chưa nhận được hộp cài tự động. Bạn vẫn có thể cài từ menu Chrome → ⋮ → Thêm vào màn hình chính / Cài đặt ứng dụng.'
+        : 'Chưa có hộp cài tự động. Hãy mở menu trình duyệt để tìm tùy chọn Cài đặt ứng dụng.';
+    }
+
+    window.addEventListener('beforeinstallprompt', (event) => {
+      event.preventDefault();
+      deferredInstallPrompt = event;
+      renderPwaInstallState();
+      showToast('📲 Phong Study đã sẵn sàng để cài đặt.');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      deferredInstallPrompt = null;
+      renderPwaInstallState();
+      showToast('✅ Đã cài Phong Study thành ứng dụng!');
+    });
+
+    async function installPWA() {
+      if (!deferredInstallPrompt) {
+        renderPwaInstallState();
+        return;
+      }
+      try {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice?.outcome === 'accepted') {
+          showToast('✅ Đang cài Phong Study...');
+        } else {
+          showToast('Bạn đã hủy cài đặt.');
+        }
+      } catch (err) {
+        console.warn('PWA install failed:', err);
+        showToast('Không thể mở hộp cài đặt. Hãy thử lại từ menu Chrome.');
+      } finally {
+        deferredInstallPrompt = null;
+        renderPwaInstallState();
+      }
+    }
+
+    function showPwaInstallHelp() {
+      const text = isLikelyAndroid()
+        ? 'Android/Chrome:\n\n1. Mở website bằng Chrome.\n2. Nhấn ⋮ ở góc trên bên phải.\n3. Chọn “Cài đặt ứng dụng” hoặc “Thêm vào màn hình chính”.\n4. Xác nhận cài đặt.\n\nNếu tùy chọn chưa xuất hiện, hãy mở website bằng HTTPS và kiểm tra manifest.json + sw.js đã được upload cùng thư mục với index.html.'
+        : 'Hãy mở website bằng Chrome/Edge trên HTTPS. Khi trình duyệt đủ điều kiện, nút “Cài đặt ngay” sẽ xuất hiện và mở hộp cài đặt hệ thống.';
+      alert(text);
+    }
+
+    document.getElementById('installPwaBtn')?.addEventListener('click', installPWA);
+    document.getElementById('pwaInstallHelpBtn')?.addEventListener('click', showPwaInstallHelp);
+
+    window.addEventListener('load', () => {
+      renderPwaInstallState();
+      setTimeout(renderPwaInstallState, 1200);
     });
 
     /* SETTINGS + API KEY MODAL EVENTS */
