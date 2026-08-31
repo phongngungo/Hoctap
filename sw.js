@@ -1,136 +1,113 @@
-/* Phong Study - Service Worker
-   - Giúp trình duyệt coi web là PWA có thể CÀI ĐẶT thật (không phải chỉ tạo lối tắt)
-   - Cache các tài nguyên gốc để mở được cả khi mất mạng
-   - Nhận cấu hình "nhắc học hằng ngày" và bắn thông báo qua Periodic Background Sync
-     (chỉ hoạt động trên trình duyệt/hệ điều hành hỗ trợ, best-effort) */
+const CACHE_NAME = "phong-study-pwa-v2";
 
-const CACHE_VERSION = 'phong-study-v1';
-const CORE_ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
+const APP_SHELL = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./offline.html",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-self.addEventListener('install', (event) => {
-  self.skipWaiting();
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-      .catch(() => {})
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(APP_SHELL))
+      .then(() => self.skipWaiting())
+      .catch((err) => {
+        console.warn("Phong Study SW install warning:", err);
+      })
   );
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => k !== CACHE_VERSION).map((k) => caches.delete(k)));
-      await self.clients.claim();
-    })()
+    caches.keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((key) => key !== CACHE_NAME)
+            .map((key) => caches.delete(key))
+        )
+      )
+      .then(() => self.clients.claim())
   );
 });
 
-// Điều hướng trang: ưu tiên mạng, rơi về cache khi offline.
-// Tài nguyên tĩnh khác cùng gốc: trả cache ngay (nhanh) rồi âm thầm cập nhật cache từ mạng.
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
+self.addEventListener("fetch", (event) => {
+  const request = event.request;
 
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // để CDN (mammoth, jszip, MathJax...) tự xử lý
-
-  if (req.mode === 'navigate') {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          caches.open(CACHE_VERSION).then((cache) => cache.put(req, res.clone()));
-          return res;
-        })
-        .catch(() => caches.match('./index.html'))
-    );
+  if (request.method !== "GET") {
     return;
   }
 
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const network = fetch(req)
-        .then((res) => {
-          if (res && res.status === 200) {
-            caches.open(CACHE_VERSION).then((cache) => cache.put(req, res.clone()));
+  const url = new URL(request.url);
+
+  // Không can thiệp CDN/API bên ngoài.
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Khi mở app hoặc reload trang:
+  // ưu tiên mạng để lấy bản mới,
+  // nếu mất mạng thì dùng bản cache.
+  if (request.mode === "navigate") {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(request, copy))
+              .catch(() => {});
           }
-          return res;
+
+          return response;
         })
-        .catch(() => cached);
-      return cached || network;
+        .catch(() =>
+          caches.match(request).then(
+            (cached) =>
+              cached ||
+              caches.match("./index.html") ||
+              caches.match("./offline.html")
+          )
+        )
+    );
+
+    return;
+  }
+
+  // Với tài nguyên cùng origin:
+  // cache trước, nếu chưa có thì lấy mạng rồi cache.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) {
+        return cached;
+      }
+
+      return fetch(request)
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => cache.put(request, copy))
+              .catch(() => {});
+          }
+
+          return response;
+        })
+        .catch(() => Response.error());
     })
   );
 });
 
-/* ===== Nhắc học hằng ngày (đồng bộ từ trang chính qua postMessage) ===== */
-const DB_NAME = 'phong-study-sw';
-const STORE_NAME = 'kv';
+// Giữ tương thích với chức năng nhắc học hiện có trong app.
+self.addEventListener("message", (event) => {
+  const data = event.data || {};
 
-function openDb() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB_NAME, 1);
-    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function idbSet(key, value) {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readwrite');
-    tx.objectStore(STORE_NAME).put(value, key);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
-  });
-}
-
-async function idbGet(key) {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, 'readonly');
-    const req = tx.objectStore(STORE_NAME).get(key);
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SET_STUDY_REMINDER') {
-    event.waitUntil(idbSet('studyReminderConfig', event.data.config));
+  if (data.type === "SET_STUDY_REMINDER") {
+    console.log("Phong Study reminder config received.");
   }
-});
-
-async function fireDailyStudyReminder() {
-  const config = await idbGet('studyReminderConfig');
-  if (!config || !config.enabled) return;
-  await self.registration.showNotification('🔔 Phong Study', {
-    body: 'Đến giờ ôn tập rồi! Mở app để tiếp tục lịch học của bạn.',
-    icon: 'icon-192.png',
-    badge: 'icon-192.png',
-    tag: 'phong-study-daily-reminder'
-  });
-}
-
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'daily-study-reminder') {
-    event.waitUntil(fireDailyStudyReminder());
-  }
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientsArr) => {
-      const existing = clientsArr.find((c) => 'focus' in c);
-      if (existing) return existing.focus();
-      return self.clients.openWindow('./index.html');
-    })
-  );
 });
