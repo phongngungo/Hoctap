@@ -3720,6 +3720,8 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     1. STRICT FACTUALITY (Tuyệt đối bám sát nguồn): Toàn bộ thông tin, định nghĩa, số liệu, luận điểm BẮT BUỘC phải bắt nguồn trực tiếp từ nội dung trong thẻ <source_documents>.
     2. ZERO HALLUCINATION (Không bịa đặt): Tuyệt đối KHÔNG suy diễn hoặc bổ sung tri thức ngoài nguồn trừ khi có yêu cầu giải thích thuật ngữ phụ trợ. Nếu tài liệu nguồn không đề cập, hãy thông báo rõ ràng: "Tài liệu nguồn không cung cấp thông tin này".
     3. CITATION ANCHORING (Neo nguồn): Khi trích xuất các ý chính, hãy ghi nhớ ngữ cảnh đoạn trích để có thể đối chiếu chính xác.
+    4. MULTI-DOCUMENT GROUNDING: Khi <source_documents> chứa nhiều tài liệu, phải xem CHÚNG LÀ MỘT TẬP NGUỒN DUY NHẤT. Rà soát tất cả tài liệu trước khi kết luận. Không được coi tài liệu đầu tiên/cuối cùng là nguồn duy nhất.
+    5. SOURCE-AVAILABILITY CHECK: Nếu có ít nhất một tài liệu trong <source_documents> có nội dung thực tế, KHÔNG được nói "tài liệu không cung cấp thông tin" chỉ vì một tài liệu riêng lẻ không có dữ liệu liên quan. Chỉ kết luận nguồn không cung cấp thông tin sau khi đã kiểm tra toàn bộ tập tài liệu.
   </grounding_rules>
 
   <pedagogical_standards>
@@ -3728,7 +3730,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
   </pedagogical_standards>
 
   <visual_learning_rules>
-    1. VISUAL-FIRST WHEN HELPFUL: Nếu kiến thức có tính trừu tượng, không gian, cơ chế, cấu tạo, quy trình, hiện tượng tự nhiên, lịch sử/văn hóa, vật thể thực tế hoặc khó hình dung bằng chữ/con số, hãy chủ động đề xuất một minh hoạ trực quan và tạo hình ảnh học tập.
+    1. VISUAL-FIRST WHEN HELPFUL: Nếu kiến thức có tính trừu tượng, không gian, cơ chế, cấu tạo, quy trình, hiện tượng tự nhiên, lịch sử/văn hóa, vật thể thực tế hoặc khó hình dung bằng chữ/con số, hãy chủ động đề xuất một minh hoạ trực quan. Khi phù hợp, đặt một <visual_prompt> rõ ràng ở cuối câu trả lời để ứng dụng tự tạo/hiển thị hình ngay trong chat.
     2. DO NOT OVERUSE: Không tạo ảnh cho mọi câu trả lời. Chỉ tạo khi hình ảnh thực sự giúp hiểu/nhớ tốt hơn văn bản.
     3. VISUAL_PROMPT_MARKER: Với câu trả lời chat thông thường (không phải tác vụ JSON/Studio), nếu cần ảnh, hãy thêm đúng một khối ở cuối câu trả lời:
        <visual_prompt>mô tả ngắn, chính xác hình cần tạo để học nội dung trên</visual_prompt>
@@ -3820,7 +3822,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     Sắp xếp theo trình tự sư phạm: nền tảng → khái niệm cốt lõi → mối liên hệ → cơ chế/quy trình → ví dụ/ứng dụng → ngoại lệ → điểm dễ nhầm → tự kiểm tra.
     Phân biệt rõ kiến thức "phải nhớ", "phải hiểu" và "phải biết cách áp dụng" khi nguồn cho phép.
     Ưu tiên bảng, gạch đầu dòng, sơ đồ phân cấp và các câu kết luận ngắn để dễ quét lại.
-    Với phần trừu tượng hoặc khó hình dung, phải thêm lớp "minh hoạ trực quan": mô tả ngắn hình ảnh/sơ đồ phù hợp (diagram, cắt lớp, flowchart, timeline, infographic hoặc minh hoạ thực tế) để người học dễ hình dung.
+    Với phần trừu tượng hoặc khó hình dung, BẮT BUỘC thêm lớp "minh hoạ trực quan": mô tả ngắn, cụ thể hình ảnh/sơ đồ phù hợp (diagram, cắt lớp, flowchart, timeline, infographic hoặc minh hoạ thực tế) để người học dễ hình dung. Mỗi minh hoạ phải nêu rõ đối tượng chính và mối quan hệ cần nhìn thấy.
     Không tự bổ sung kiến thức ngoài nguồn; khi nguồn thiếu thông tin thì ghi rõ "Tài liệu nguồn không cung cấp thông tin này".
   </learning_design>
   <output_format>
@@ -4259,6 +4261,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         const m = cleaned.match(re);
         if (m) return String(m[0] || m[1] || '').trim();
       }
+      if (shouldAutoIllustrateAnswer(cleaned)) return buildAutomaticVisualBrief(cleaned);
       return '';
     }
 
@@ -4266,96 +4269,122 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       return !studioTask;
     }
 
-    const GEMINI_IMAGE_MODELS = [
-      // Stable image-generation model hiện hành của Gemini.
-      'gemini-2.5-flash-image',
-      'gemini-3.1-flash-image'
-    ];
+    function shouldAutoIllustrateAnswer(rawText) {
+      const t = String(rawText || '').toLowerCase();
+      if (!t) return false;
+      return /(cấu tạo|cơ chế|quy trình|các bước|chu trình|mạch điện|đồ thị|biểu đồ|sơ đồ|hệ thống|nguyên lý|phản ứng|quang hợp|hô hấp|phân tử|nguyên tử|tế bào|cơ quan|giải phẫu|địa chất|lịch sử|timeline|flowchart|diagram|graph|visual|trực quan|hình dung|không gian|lực|điện trường|từ trường|sóng|dao động)/i.test(t);
+    }
 
-    async function generateGeminiStudyImage(visualPrompt, sourceContext, apiKeys) {
-      const prompt = [
-        'Create exactly one educational study illustration based ONLY on the supplied visual brief.',
-        'The goal is to help a student understand and remember the concept, not to create decorative art.',
-        'Use a clear educational layout: diagram, labelled illustration, flowchart, cross-section, timeline, process visualization, or practical real-world scene as appropriate.',
-        'Prefer concise Vietnamese labels when labels are useful. Avoid inventing unsupported facts, numbers, names, measurements, or conclusions.',
-        'Make the important relationships visually obvious. Keep text inside the image minimal and legible.',
-        `VISUAL BRIEF: ${visualPrompt}`,
-        sourceContext?.title && sourceContext.title !== 'Trò chuyện học tập mới'
-          ? `SOURCE TITLE: ${sourceContext.title}\nSOURCE CONTEXT: ${String(sourceContext.content || sourceContext.note || '').slice(0, 9000)}`
-          : ''
-      ].filter(Boolean).join('\n\n');
+    function buildAutomaticVisualBrief(rawText) {
+      const clean = String(rawText || '').replace(/<visual_prompt>[\s\S]*?<\/visual_prompt>/gi, '').replace(/\s+/g, ' ').trim();
+      if (!clean) return '';
+      const compact = clean.length > 850 ? clean.slice(0, 850) + '…' : clean;
+      return `Tạo một sơ đồ minh hoạ học tập bám sát nội dung sau. Ưu tiên thể hiện trực quan các đối tượng, mối quan hệ, diễn biến theo thời gian hoặc các bước; không thêm dữ kiện ngoài nội dung. Nội dung: ${compact}`;
+    }
 
-      let lastError = null;
-      const keys = Array.isArray(apiKeys) ? apiKeys : [];
-      if (!keys.length) throw new Error('Chưa có API Key cho tính năng tạo ảnh.');
+    // Fallback ảnh học tập chạy hoàn toàn trong trình duyệt khi Gemini Image không có quota.
+    // Đây là SVG thực sự nên vẫn hiển thị trực tiếp như một ảnh trong bong bóng chat,
+    // không phụ thuộc thêm dịch vụ bên ngoài.
+    function svgToBase64Data(svg) {
+      return btoa(unescape(encodeURIComponent(svg)));
+    }
 
-      for (const model of GEMINI_IMAGE_MODELS) {
-        for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-          const apiKey = keys[keyIndex];
-          if (!apiKey || isApiKeyTemporarilyExhausted(apiKey, model)) continue;
-          try {
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-            const res = await fetch(endpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey
-              },
-              body: JSON.stringify({
-                contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                generationConfig: {
-                  responseModalities: ['IMAGE'],
-                  imageConfig: {
-                    aspectRatio: '16:9',
-                    imageSize: '1K'
-                  }
-                }
-              })
-            });
+    function makeLocalEducationalImage(visualPrompt, sourceContext) {
+      const prompt = String(visualPrompt || '').trim();
+      const lower = prompt.toLowerCase();
+      const subject = String(sourceContext?.title || 'Minh hoạ học tập').trim().slice(0, 90);
+      const safe = (v) => String(v || '').replace(/[<>&"']/g, ch => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[ch]));
 
-            const errData = res.ok ? null : await res.json().catch(() => ({}));
-            if (!res.ok) {
-              const status = res.status;
-              const code = errData?.error?.status || '';
-              const message = errData?.error?.message || `HTTP ${status}`;
-              lastError = new Error(message);
-              lastError.status = status;
-              lastError.code = code;
-              if (shouldRotateApiKey(status, code, message)) {
-                markApiKeyTemporarilyExhausted(apiKey, model);
-                continue;
-              }
-              if ((status === 401 || status === 403 || status === 404) && keyIndex < keys.length - 1) continue;
-              // 404 trên model hiện tại -> thử model ảnh còn lại.
-              if ([404, 429, 500, 502, 503, 504].includes(status)) continue;
-              continue;
-            }
+      // Mẫu chuyên dụng cho mạch R-L / đáp ứng quá độ vì đây là kiểu nội dung
+      // thường cần nhìn trực quan hơn công thức.
+      if (/r\s*[-–—]?\s*l|mạch\s*r\s*[-–—]?\s*l|rl circuit|transient response|dòng điện.*cuộn cảm|cuộn cảm/.test(lower)) {
+        const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
+  <text x="60" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">Đáp ứng quá độ của mạch R–L</text>
+  <text x="60" y="110" font-family="Arial, sans-serif" font-size="18" fill="#64748b">Minh hoạ trực quan cho ${safe(subject)}</text>
 
-            const data = await res.json();
-            const parts = data?.candidates?.[0]?.content?.parts || [];
-            const imagePart = parts.find(p => {
-              const part = p?.inlineData || p?.inline_data;
-              return part?.data && /^image\//i.test(part?.mimeType || part?.mime_type || '');
-            });
-            const rawImage = imagePart?.inlineData || imagePart?.inline_data;
-            if (rawImage?.data) {
-              clearApiKeyQuotaState(apiKey, model);
-              return {
-                mimeType: rawImage.mimeType || rawImage.mime_type || 'image/png',
-                data: rawImage.data,
-                prompt: visualPrompt,
-                model
-              };
-            }
-            lastError = new Error(`Model ${model} không trả về phần ảnh.`);
-          } catch (err) {
-            lastError = err instanceof Error ? err : new Error(String(err));
-            const msg = lastError.message || '';
-            if (/failed to fetch|network|timeout|timed out/i.test(msg)) continue;
-          }
-        }
+  <rect x="60" y="150" width="500" height="230" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="90" y="192" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e293b">Mạch điện lý tưởng</text>
+  <line x1="120" y1="280" x2="220" y2="280" stroke="#334155" stroke-width="5"/>
+  <rect x="220" y="248" width="90" height="64" rx="8" fill="#e2e8f0" stroke="#334155" stroke-width="4"/>
+  <text x="265" y="289" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">R</text>
+  <line x1="310" y1="280" x2="350" y2="280" stroke="#334155" stroke-width="5"/>
+  <path d="M350 280 c18 -45 36 45 54 0 c18 -45 36 45 54 0 c18 -45 36 45 54 0" fill="none" stroke="#334155" stroke-width="5"/>
+  <text x="440" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">L (cuộn cảm)</text>
+  <line x1="512" y1="280" x2="520" y2="280" stroke="#334155" stroke-width="5"/>
+  <line x1="520" y1="280" x2="520" y2="350" stroke="#334155" stroke-width="5"/>
+  <line x1="520" y1="350" x2="120" y2="350" stroke="#334155" stroke-width="5"/>
+  <line x1="120" y1="350" x2="120" y2="280" stroke="#334155" stroke-width="5"/>
+  <circle cx="120" cy="280" r="28" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
+  <text x="120" y="288" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1d4ed8">e</text>
+  <text x="90" y="414" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Khi đóng mạch, dòng qua L tăng dần.</text>
+
+  <rect x="600" y="150" width="540" height="500" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="630" y="192" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e293b">Dòng điện theo thời gian</text>
+  <line x1="680" y1="580" x2="1080" y2="580" stroke="#334155" stroke-width="4"/>
+  <line x1="680" y1="580" x2="680" y2="250" stroke="#334155" stroke-width="4"/>
+  <text x="1085" y="605" font-family="Arial, sans-serif" font-size="18" fill="#334155">t</text>
+  <text x="648" y="252" font-family="Arial, sans-serif" font-size="18" fill="#334155">i</text>
+  <line x1="680" y1="330" x2="1080" y2="330" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="1090" y="336" font-family="Arial, sans-serif" font-size="17" fill="#64748b">I<sub>xl</sub></text>
+  <path d="M680 580 C720 575 748 540 790 490 C840 430 885 380 940 350 C985 333 1030 330 1080 330" fill="none" stroke="#2563eb" stroke-width="7"/>
+  <circle cx="680" cy="580" r="8" fill="#2563eb"/>
+  <text x="700" y="620" font-family="Arial, sans-serif" font-size="17" fill="#64748b">t = 0</text>
+  <line x1="680" y1="640" x2="900" y2="640" stroke="#ef4444" stroke-width="5"/>
+  <line x1="680" y1="632" x2="680" y2="648" stroke="#ef4444" stroke-width="5"/>
+  <line x1="900" y1="632" x2="900" y2="648" stroke="#ef4444" stroke-width="5"/>
+  <text x="790" y="676" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#dc2626">Δt: thời gian thiết lập quá độ</text>
+  <text x="710" y="235" font-family="Arial, sans-serif" font-size="16" fill="#64748b">đường cong tăng dần, tiệm cận trạng thái xác lập</text>
+</svg>`;
+        return { mimeType: 'image/svg+xml', data: svgToBase64Data(svg), prompt, localFallback: true };
       }
-      throw lastError || new Error('Không thể tạo hình ảnh từ Gemini.');
+
+      // Fallback tổng quát: biến brief thành sơ đồ học tập gồm khái niệm → quan hệ → kết luận.
+      const brief = prompt.length > 260 ? prompt.slice(0, 260) + '…' : prompt;
+      const svg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
+  <text x="60" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">Minh hoạ học tập</text>
+  <text x="60" y="110" font-family="Arial, sans-serif" font-size="18" fill="#64748b">${safe(subject)}</text>
+  <rect x="70" y="165" width="300" height="150" rx="22" fill="#dbeafe" stroke="#93c5fd" stroke-width="3"/>
+  <text x="220" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">1. KHÁI NIỆM</text>
+  <text x="95" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Điểm cần hình dung</text>
+  <text x="95" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">${safe(brief.slice(0, 90))}</text>
+  <path d="M370 240 H470" stroke="#64748b" stroke-width="6" marker-end="url(#a)"/>
+  <rect x="470" y="165" width="300" height="150" rx="22" fill="#dcfce7" stroke="#86efac" stroke-width="3"/>
+  <text x="620" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#166534">2. MỐI QUAN HỆ</text>
+  <text x="495" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Nguyên nhân → diễn biến</text>
+  <text x="495" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">Quan sát bằng sơ đồ thay vì chỉ đọc số</text>
+  <path d="M770 240 H870" stroke="#64748b" stroke-width="6" marker-end="url(#a)"/>
+  <rect x="870" y="165" width="260" height="150" rx="22" fill="#fef3c7" stroke="#fcd34d" stroke-width="3"/>
+  <text x="1000" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#92400e">3. GHI NHỚ</text>
+  <text x="895" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Kết luận trực quan</text>
+  <text x="895" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">Nhìn → hiểu → nhớ</text>
+  <rect x="70" y="375" width="1060" height="245" rx="22" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
+  <text x="100" y="425" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Brief minh hoạ</text>
+  <foreignObject x="100" y="450" width="1000" height="130">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font:18px Arial,sans-serif;color:#334155;line-height:1.6;">${safe(brief)}</div>
+  </foreignObject>
+  <text x="100" y="600" font-family="Arial, sans-serif" font-size="15" fill="#64748b">Đây là sơ đồ dự phòng chạy cục bộ khi tài khoản chưa có quota tạo ảnh Gemini.</text>
+  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+</svg>`;
+      return { mimeType: 'image/svg+xml', data: svgToBase64Data(svg), prompt, localFallback: true };
+    }
+
+    // ============================================================================
+    // LOCAL EDUCATIONAL VISUALS — KHÔNG DÙNG QUOTA TẠO ẢNH
+    // Gemini chỉ quyết định NỘI DUNG cần minh hoạ; trình duyệt tự dựng SVG.
+    // ============================================================================
+    function isGeminiImageQuotaUnavailableError(err) {
+      const msg = String(err?.message || err || '');
+      return /free[_\s-]?tier|quota exceeded|limit:\s*0|generate_content_free_tier|resource.?exhausted/i.test(msg);
+    }
+
+    async function generateGeminiStudyImage(visualPrompt, sourceContext) {
+      // Giữ nguyên tên hàm để không phá các luồng cũ, nhưng tuyệt đối không gọi
+      // Gemini Image nữa. Đây là ảnh SVG được tạo ngay trên thiết bị, miễn phí.
+      return makeLocalEducationalImage(visualPrompt, sourceContext);
     }
 
     async function queryGemini(promptText, sourceContext, session = null, forcedTask = null, options = {}) {
@@ -4366,10 +4395,30 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         throw new Error('Vui lòng thêm ít nhất một API Key để sử dụng tính năng AI.');
       }
 
-      const hasRealContext = sourceContext && sourceContext.title && sourceContext.title !== 'Trò chuyện học tập mới';
+      const hasRealContext = !!(sourceContext && (
+        (Array.isArray(sourceContext.sources) && sourceContext.sources.length) ||
+        (sourceContext.title && sourceContext.title !== 'Trò chuyện học tập mới')
+      ));
       const studioTask = forcedTask || detectGeminiStudioTask(promptText);
       const workingMemory = buildWorkingMemory(session);
-      const sourceBlock = hasRealContext ? `\n<source_documents>\n- Tiêu đề: ${sourceContext.title}\n- Nội dung / Trích dẫn: ${sourceContext.content || (sourceContext.multimodal ? '[Nội dung nằm trong file đính kèm ở các parts đa phương thức của lượt gửi; hãy đọc file trực tiếp.]' : 'Không có')}\n- Ghi chú: ${sourceContext.note || 'Không có'}\n</source_documents>` : '\n<source_documents>\nKhông có tài liệu nguồn riêng được cung cấp.\n</source_documents>';
+
+      // Hỗ trợ phiên "Toàn bộ môn" với nhiều tài liệu thật.
+      // Không dùng đoạn preview 1.500 ký tự của từng file làm nguồn duy nhất nữa;
+      // queryGemini sẽ khôi phục/đọc từng attachment và hợp nhất thành nguồn truy vấn.
+      let resolvedSources = [];
+      if (Array.isArray(sourceContext?.sources) && sourceContext.sources.length) {
+        resolvedSources = await resolveSubjectSourcesForQuery(sourceContext.sources);
+      } else if (sourceContext) {
+        resolvedSources = [sourceContext];
+      }
+
+      const readableSourceCount = resolvedSources.filter(src => String(src?.content || '').trim() || src?.multimodal).length;
+      const sourceBlock = hasRealContext ? `\n<source_documents>\n<source_set_meta>\nĐây là TẬP NHIỀU TÀI LIỆU thuộc cùng môn học. Số tài liệu: ${resolvedSources.length}. Số tài liệu có dữ liệu đọc được/đa phương thức: ${readableSourceCount}. BẮT BUỘC sử dụng và rà soát toàn bộ tập nguồn trước khi kết luận.\n</source_set_meta>\n${resolvedSources.map((src, i) => {
+        const title = src?.title || src?.fileName || `Tài liệu ${i + 1}`;
+        const note = src?.note || 'Không có';
+        const content = src?.content || (src?.multimodal ? '[FILE ĐA PHƯƠNG THỨC: dữ liệu file được gửi trực tiếp ở parts của lượt này; hãy đọc file.]' : 'Không có nội dung văn bản đã trích xuất.');
+        return `\n=== TÀI LIỆU NGUỒN ${i + 1}/${resolvedSources.length} ===\nTiêu đề: ${title}\nGhi chú: ${note}\nNội dung:\n${content}`;
+      }).join('\n') || '\nKhông có nội dung tài liệu đọc được.\n'}\n</source_documents>` : '\n<source_documents>\nKhông có tài liệu nguồn riêng được cung cấp.\n</source_documents>';
       const taskBlock = studioTask ? `\n${GEMINI_STUDIO_PROMPTS[studioTask]}` : '';
       const taskTypeBlock = studioTask
         ? `\n<task_type>${studioTask}</task_type>\n<task_name>${GEMINI_STUDIO_TASK_NAMES[studioTask] || studioTask}</task_name>`
@@ -4385,17 +4434,22 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         const model = routedModels[modelIndex];
         try {
           const currentParts = [];
-          if (sourceContext?.multimodal) {
-            let media = sourceContext.multimodalCacheKey ? aiMultimodalContextCache.get(sourceContext.multimodalCacheKey) : null;
-            if (sourceContext.multimodalKind === 'pptx') {
-              if (!media && sourceContext.attachmentId) {
-                const record = await getAttachmentRecord(sourceContext.attachmentId);
+          const mediaSources = Array.isArray(resolvedSources) ? resolvedSources : [];
+          // Gửi toàn bộ file đa phương thức của "Toàn bộ môn" (trong giới hạn an toàn),
+          // thay vì chỉ gửi file cuối cùng.
+          for (let sourceIndex = 0; sourceIndex < Math.min(mediaSources.length, 8); sourceIndex++) {
+            const activeSource = mediaSources[sourceIndex];
+            if (!activeSource?.multimodal) continue;
+            let media = activeSource.multimodalCacheKey ? aiMultimodalContextCache.get(activeSource.multimodalCacheKey) : null;
+            if (activeSource.multimodalKind === 'pptx') {
+              if (!media && activeSource.attachmentId) {
+                const record = await getAttachmentRecord(activeSource.attachmentId);
                 if (record?.blob) {
-                  const restoredFile = new File([record.blob], record.name || sourceContext.fileName || 'presentation.pptx', {
-                    type: record.type || sourceContext.mimeType || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                  const restoredFile = new File([record.blob], record.name || activeSource.fileName || 'presentation.pptx', {
+                    type: record.type || activeSource.mimeType || 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
                   });
                   const pptx = await extractPptxContent(restoredFile, { includeImages: true, maxImagesPerSlide: 4 });
-                  let geminiFileUri = sourceContext.geminiFileUri || null;
+                  let geminiFileUri = activeSource.geminiFileUri || null;
                   if (!geminiFileUri) {
                     for (const candidateKey of apiKeys) {
                       if (restoredFile.size > 100 * 1024 * 1024) break;
@@ -4409,30 +4463,30 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
                   }
                   media = {
                     kind: 'pptx',
-                    mimeType: sourceContext.mimeType || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                    mimeType: activeSource.mimeType || 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                     fileName: restoredFile.name, attachmentId: record.id, geminiFileUri,
                     text: pptx.text, images: pptx.images
                   };
-                  aiMultimodalContextCache.set(sourceContext.multimodalCacheKey || `ai_pptx_${record.id}`, media);
+                  aiMultimodalContextCache.set(activeSource.multimodalCacheKey || `ai_pptx_${record.id}`, media);
                 }
               }
-              if (!media) throw new Error(`Không thể khôi phục PowerPoint "${sourceContext.fileName || sourceContext.title || 'đính kèm'}". Vui lòng nạp lại file.`);
+              if (!media) throw new Error(`Không thể khôi phục PowerPoint "${activeSource.fileName || activeSource.title || 'đính kèm'}". Vui lòng nạp lại file.`);
               if (media.geminiFileUri) currentParts.push({ fileData: { mimeType: media.mimeType, fileUri: media.geminiFileUri } });
               if (media.text) currentParts.push({ text: `[NỘI DUNG TRÍCH XUẤT TỪ POWERPOINT]\n${media.text}` });
               (media.images || []).forEach(img => { if (img?.mimeType && img?.data) currentParts.push({ inlineData: { mimeType: img.mimeType, data: img.data } }); });
             } else {
-              if (!media && sourceContext.attachmentId) {
-                const record = await getAttachmentRecord(sourceContext.attachmentId);
+              if (!media && activeSource.attachmentId) {
+                const record = await getAttachmentRecord(activeSource.attachmentId);
                 if (record?.blob) {
                   media = {
-                    mimeType: record.type || sourceContext.mimeType || getMimeType(record.blob),
+                    mimeType: record.type || activeSource.mimeType || getMimeType(record.blob),
                     data: await fileToBase64(record.blob),
-                    fileName: record.name || sourceContext.fileName || sourceContext.title
+                    fileName: record.name || activeSource.fileName || activeSource.title
                   };
-                  aiMultimodalContextCache.set(sourceContext.multimodalCacheKey || `ai_file_${sourceContext.attachmentId}`, media);
+                  aiMultimodalContextCache.set(activeSource.multimodalCacheKey || `ai_file_${activeSource.attachmentId}`, media);
                 }
               }
-              if (!media?.mimeType || !media?.data) throw new Error(`Không thể khôi phục dữ liệu đa phương thức của file "${sourceContext.fileName || sourceContext.title || 'đính kèm'}". Vui lòng nạp lại file.`);
+              if (!media?.mimeType || !media?.data) throw new Error(`Không thể khôi phục dữ liệu đa phương thức của file "${activeSource.fileName || activeSource.title || 'đính kèm'}". Vui lòng nạp lại file.`);
               currentParts.push({ inlineData: { mimeType: media.mimeType, data: media.data } });
             }
           }
@@ -4450,15 +4504,8 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
               const visual = extractVisualPrompt(result.text);
               const fallbackPrompt = visual.prompt || deriveVisualPromptFromText(result.text);
               if (fallbackPrompt) {
-                let image = null;
-                let imageError = null;
-                try {
-                  image = await generateGeminiStudyImage(fallbackPrompt, sourceContext, apiKeys);
-                } catch (imageErr) {
-                  imageError = imageErr?.message || String(imageErr);
-                  console.warn('AI visual generation warning:', imageErr);
-                }
-                return { text: visual.prompt ? visual.text : result.text, image, imageError };
+                const image = makeLocalEducationalImage(fallbackPrompt, sourceContext);
+                return { text: visual.prompt ? visual.text : result.text, image, imageError: null };
               }
               return { text: visual.text, image: null, imageError: null };
             }
@@ -5049,7 +5096,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
                 if (img.prompt) {
                   const cap = document.createElement('div');
                   cap.className = 'gemini-ai-image-caption';
-                  cap.textContent = '🖼️ Minh hoạ học tập do AI tạo';
+                  cap.textContent = img.localFallback ? '🧩 Minh hoạ học tập tạo ngay trên thiết bị • Không cần quota tạo ảnh' : '🖼️ Minh hoạ học tập';
                   wrap.appendChild(cap);
                 }
                 bubble.appendChild(wrap);
@@ -5095,9 +5142,9 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         stream.appendChild(loadingRow);
         stream.scrollTop = stream.scrollHeight;
         try {
-          const image = await generateGeminiStudyImage(fallbackPrompt, session.sourceContext, getStoredGeminiApiKeys());
+          const image = makeLocalEducationalImage(fallbackPrompt, session.sourceContext);
           loadingRow.remove();
-          const botMsg = { role: 'bot', text: 'Đây là hình minh hoạ trực quan cho nội dung ngay trước đó:' };
+          const botMsg = { role: 'bot', text: 'Đây là hình minh hoạ trực quan được dựng ngay trên thiết bị, không cần quota tạo ảnh:' };
           if (image?.data) {
             const imageKey = `ai_img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
             aiGeneratedImageCache.set(imageKey, image);
@@ -5108,7 +5155,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
           renderGeminiStream(session);
         } catch (err) {
           loadingRow.remove();
-          session.messages.push({ role: 'bot', text: `⚠️ Không thể tạo ảnh: ${err?.message || err}` });
+          session.messages.push({ role: 'bot', text: `⚠️ Không thể dựng minh hoạ cục bộ: ${err?.message || err}` });
           saveData();
           renderGeminiStream(session);
         }
@@ -7206,22 +7253,95 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       }
     });
 
-    /* ✨ HỎI AI VỀ TOÀN BỘ MÔN (NOTEBOOKLM MINI) */
-    function askAiAboutSubject(subId) {
+    /* ✨ HỎI AI VỀ TOÀN BỘ MÔN (NOTEBOOKLM MINI)
+       - Lưu MANIFEST của tất cả tài liệu, không ghép preview 1.500 ký tự.
+       - Khi người dùng đặt câu hỏi, queryGemini sẽ đọc/khôi phục từng attachment thật.
+       - Nhờ vậy hỏi từng tài liệu hay hỏi cả môn đều dùng cùng nguồn dữ liệu thực.
+    */
+    async function resolveSubjectSourcesForQuery(sources) {
+      const out = [];
+      for (const src of (Array.isArray(sources) ? sources : [])) {
+        const item = { ...src };
+        try {
+          if (item.attachmentId) {
+            const record = await getAttachmentRecord(item.attachmentId);
+            if (record?.blob) {
+              const fileName = record.name || item.fileName || item.title || 'Tài liệu';
+              const file = new File([record.blob], fileName, {
+                type: record.type || item.mimeType || getMimeType({ name: fileName, type: '' }) || 'application/octet-stream'
+              });
+              const mimeType = getMimeType(file);
+
+              if (getFileExtension(fileName) === 'pptx') {
+                const pptxSource = await buildPptxAiSourceContext(file, record.id, item.note || `PowerPoint: ${fileName}`);
+                Object.assign(item, pptxSource, { title: fileName, fileName, attachmentId: record.id });
+              } else if (isMultimodalMime(mimeType)) {
+                let cacheKey = item.multimodalCacheKey;
+                if (!cacheKey || !aiMultimodalContextCache.has(cacheKey)) {
+                  const base64 = await fileToBase64(file);
+                  cacheKey = `ai_subject_file_${record.id}`;
+                  aiMultimodalContextCache.set(cacheKey, {
+                    mimeType,
+                    data: base64,
+                    fileName,
+                    attachmentId: record.id
+                  });
+                }
+                Object.assign(item, {
+                  title: fileName,
+                  fileName,
+                  mimeType,
+                  multimodal: true,
+                  multimodalCacheKey: cacheKey,
+                  attachmentId: record.id,
+                  content: ''
+                });
+              } else {
+                const extractedText = await extractTextFromFile(file);
+                if (extractedText) item.content = extractedText;
+                item.title = fileName;
+                item.fileName = fileName;
+                item.mimeType = mimeType;
+                item.multimodal = false;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Subject source restore warning:', item.title || item.fileName, err);
+          // Giữ preview cũ làm fallback; không làm mất cả phiên môn chỉ vì một file lỗi.
+          item.content = item.content || item.textExcerpt || item.note || item.title || '';
+        }
+        out.push(item);
+      }
+      return out;
+    }
+
+    async function askAiAboutSubject(subId) {
       const subject = state.subjects.find(s => s.id === subId);
       if (!subject || !subject.materials || !subject.materials.length) {
         showToast('Môn học này chưa có tài liệu để phân tích.');
         return;
       }
 
-      let aggregatedText = `TÀI LIỆU CỦA MÔN HỌC: ${subject.name}\n\n`;
-      subject.materials.forEach((m, idx) => {
-        aggregatedText += `--- TÀI LIỆU ${idx + 1}: ${m.title} ---\n`;
-        if (m.note) aggregatedText += `Ghi chú: ${m.note}\n`;
-        if (m.textExcerpt) aggregatedText += `Trích dẫn nội dung: ${m.textExcerpt.slice(0, 1500)}\n\n`;
-      });
+      showToast(`Đang chuẩn bị ${subject.materials.length} tài liệu cho AI...`);
+      const sources = subject.materials.map((m, idx) => ({
+        id: m.id || `mat_${idx}`,
+        title: m.title || m.name || `Tài liệu ${idx + 1}`,
+        fileName: m.name || m.title || `Tài liệu ${idx + 1}`,
+        note: m.note || '',
+        textExcerpt: m.textExcerpt || '',
+        attachmentId: m.attachmentId || null,
+        mimeType: getMimeType({ name: m.name || m.title || '', type: '' }),
+        multimodal: false
+      }));
 
-      createAndOpenAiSession(`Toàn bộ môn: ${subject.name}`, aggregatedText, `Tổng hợp ${subject.materials.length} tài liệu trong môn học`);
+      const sourceContext = {
+        title: `Toàn bộ môn: ${subject.name}`,
+        note: `Tổng hợp ${sources.length} tài liệu trong môn học`,
+        sources
+      };
+
+      createAndOpenAiSession(`Toàn bộ môn: ${subject.name}`, '', sourceContext.note, sourceContext);
     }
 
     function deleteSubject(subId) {
