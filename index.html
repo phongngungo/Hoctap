@@ -1931,32 +1931,14 @@
     <div class="gemini-chat-stream" id="geminiChatStream"></div>
 
     <div class="gemini-chips-container" aria-label="Công cụ học tập AI">
-      <button type="button" class="gemini-studio-tool studio-audio" data-studio-task="podcast" aria-label="Tổng quan bằng âm thanh">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V7a3 3 0 0 0-6 0v4a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0h2a3 3 0 0 0 6 0h2Zm-4 5h-2v3H8v2h8v-2h-3v-3Z"/></svg></span><span class="gemini-studio-tool-text">Tổng quan bằng âm thanh</span>
+      <button type="button" class="gemini-studio-tool studio-overview" data-studio-task="studyGuide" aria-label="Tổng hợp kiến thức toàn diện">
+        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 8h10M7 12h7M7 16h8"/></svg></span><span class="gemini-studio-tool-text">Tổng hợp kiến thức</span>
       </button>
-      <button type="button" class="gemini-studio-tool studio-presentation" data-studio-task="presentation" aria-label="Bản trình bày">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v12H4zM7 7v6h10V7H7Zm4 11h2v2h-2z"/></svg></span><span class="gemini-studio-tool-text">Bản trình bày</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-overview" data-studio-task="studyGuide" aria-label="Tổng quan bằng văn bản">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM7 8h10M7 12h7M7 16h8"/></svg></span><span class="gemini-studio-tool-text">Tổng quan bằng văn bản</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-mindmap" data-studio-task="mindmap" aria-label="Bản đồ tư duy">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M8 6h8M6 8v8M18 8v8M8 18h8M7.5 7.5 10.5 10.5M16.5 7.5 13.5 10.5M7.5 16.5 10.5 13.5M16.5 16.5 13.5 13.5"/></svg></span><span class="gemini-studio-tool-text">Bản đồ tư duy</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-report" data-studio-task="studyGuide" aria-label="Báo cáo">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10v13H5zM9 7h8v13H9zM8 8H7v2h1zm0 4H7v2h1zm0 4H7v2h1z"/></svg></span><span class="gemini-studio-tool-text">Báo cáo</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-flashcards" data-studio-task="flashcards" aria-label="Thẻ ghi nhớ">
+      <button type="button" class="gemini-studio-tool studio-flashcards" data-studio-task="flashcards" aria-label="Thẻ ghi nhớ toàn diện">
         <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="gemini-studio-tool-text">Thẻ ghi nhớ</span>
       </button>
-      <button type="button" class="gemini-studio-tool studio-quiz" data-studio-task="quiz" aria-label="Bài kiểm tra">
+      <button type="button" class="gemini-studio-tool studio-quiz" data-studio-task="quiz" aria-label="Bài kiểm tra toàn diện">
         <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h5"/><circle cx="17" cy="16.5" r="2.5"/><path d="M17 15v3"/></svg></span><span class="gemini-studio-tool-text">Bài kiểm tra</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-infographic" data-studio-task="infographic" aria-label="Bản đồ họa thông tin">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h5"/></svg></span><span class="gemini-studio-tool-text">Bản đồ họa thông tin</span>
-      </button>
-      <button type="button" class="gemini-studio-tool studio-table" data-studio-task="dataTable" aria-label="Bảng dữ liệu">
-        <span class="gemini-studio-tool-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 10h16M4 15h16M10 5v14M15 5v14"/></svg></span><span class="gemini-studio-tool-text">Bảng dữ liệu</span>
       </button>
     </div>
 
@@ -3719,36 +3701,50 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
 
     const GEMINI_STUDIO_PROMPTS = {
       flashcards: `<task_instruction>
-  <task_name>GENERATE_COMPREHENSIVE_FLASHCARDS</task_name>
+  <task_name>GENERATE_EXHAUSTIVE_FLASHCARDS</task_name>
   <objective>
-    Trích xuất toàn bộ các đơn vị kiến thức cốt lõi từ tài liệu nguồn và đóng gói thành một bộ thẻ ghi nhớ hoàn chỉnh. Không giới hạn số lượng cố định, mà phải bao quát toàn diện các phần quan trọng của tài liệu.
+    Tạo bộ thẻ ghi nhớ có độ bao phủ tối đa từ TOÀN BỘ tài liệu nguồn. Mục tiêu là không bỏ sót bất kỳ chi tiết quan trọng nào có giá trị cho việc học, ôn thi hoặc ghi nhớ lâu dài. Không dùng số lượng thẻ cố định; số thẻ phải tăng theo độ dài và độ chi tiết của nguồn.
   </objective>
-  <extraction_criteria>
-    1. Định nghĩa & Khái niệm then chốt (Core Concepts).
-    2. Nguyên lý, Công thức và Cơ chế vận hành (Mechanisms & Equations).
-    3. Phân biệt & So sánh các thực thể dễ nhầm lẫn (Distinctions).
-    4. Mối quan hệ Nhân - Quả và Mốc quan trọng (Cause & Effect / Milestones).
-  </extraction_criteria>
+  <coverage_audit>
+    Trước khi tạo thẻ, hãy quét tài liệu theo từng phần/đoạn và lập danh mục các "atomic facts" (đơn vị kiến thức nhỏ nhất có thể hỏi được). Sau đó tạo thẻ cho tất cả atomic facts quan trọng và kiểm tra lại coverage trước khi trả kết quả.
+    Bắt buộc rà soát: định nghĩa, thuật ngữ, tên gọi, đặc điểm, nguyên lý, quy tắc, công thức, điều kiện, quy trình/các bước, số liệu, mốc thời gian, ví dụ, trường hợp ngoại lệ, quan hệ nhân-quả, so sánh/phân biệt, điều kiện áp dụng, lỗi dễ nhầm và kết luận quan trọng.
+    Mỗi phần lớn của tài liệu phải có thẻ đại diện; không được chỉ tập trung vào phần nổi bật hoặc phần đầu tài liệu.
+  </coverage_audit>
   <card_design_rules>
-    - Front: câu hỏi/tình huống kích thích Active Recall, không để lộ đáp án.
-    - Back: trực diện, súc tích 1-3 câu, đầy đủ ngữ cảnh, giải thích tại sao/như thế nào.
-    - Tránh lặp nội dung, tăng tính phân loại kiến thức.
+    - Front: câu hỏi kích thích Active Recall; ưu tiên câu hỏi nguyên tử, một ý chính mỗi thẻ; tuyệt đối không lộ đáp án.
+    - Back: trả lời chính xác, đủ ngữ cảnh để tự học, có "vì sao/điều kiện khi nào" khi tài liệu có đề cập.
+    - Với nội dung dễ nhầm: tạo thẻ đối chiếu rõ điểm khác nhau.
+    - Với quy trình: tạo thẻ hỏi thứ tự, mục đích từng bước và điều kiện chuyển bước khi nguồn có thông tin.
+    - Tránh trùng lặp nhưng không gộp quá nhiều ý khác nhau vào một thẻ.
+    - Nếu nguồn không cung cấp đủ thông tin cho một chi tiết, không tự bổ sung; không tạo kiến thức ngoài nguồn.
   </card_design_rules>
   <output_format>
     Trả về JSON thuần túy:
-    {"flashcards":[{"id":"fc_001","category":"Terminology | Mechanism | Comparison | Formula","difficulty":"EASY | MEDIUM | HARD","front":"Mặt trước","back":"Mặt sau","context_quote":"Câu trích dẫn ngắn từ nguồn"}]}
+    {"flashcards":[{"id":"fc_001","category":"Definition | Fact | Mechanism | Process | Comparison | Formula | Exception | Example | Application","difficulty":"EASY | MEDIUM | HARD","front":"Câu hỏi","back":"Đáp án và giải thích","context_quote":"Trích dẫn/ngữ cảnh ngắn từ nguồn"}]}
   </output_format>
 </task_instruction>`,
 
       quiz: `<task_instruction>
-  <task_name>GENERATE_PRACTICE_QUIZ</task_name>
-  <objective>Thiết lập đề kiểm tra đánh giá Nhận biết, Thông hiểu và Vận dụng dựa trên tài liệu nguồn.</objective>
-  <rubric>
-    - Distractors hợp lý, dựa trên lỗi sai/nhầm lẫn có thể suy ra từ tài liệu.
-    - Explanation phân tích vì sao đáp án đúng và các đáp án sai không đúng, chỉ dựa trên nguồn.
-  </rubric>
+  <task_name>GENERATE_EXHAUSTIVE_DIAGNOSTIC_QUIZ</task_name>
+  <objective>
+    Tạo bài kiểm tra chẩn đoán bao phủ TOÀN BỘ kiến thức quan trọng trong tài liệu nguồn. Không đặt giới hạn cứng về số câu. Số câu phải đủ để kiểm tra mọi ý quan trọng, không chỉ những ý nổi bật.
+  </objective>
+  <coverage_audit>
+    Quét tài liệu theo từng phần/đoạn, lập checklist các atomic facts và khái niệm có thể kiểm tra, sau đó phân bổ câu hỏi để không bỏ sót.
+    Bắt buộc bao phủ khi nguồn có: định nghĩa, thuật ngữ, đặc điểm, phân loại, nguyên lý/cơ chế, công thức, điều kiện, quy trình/thứ tự, số liệu, mốc thời gian, ví dụ, ngoại lệ, quan hệ nhân-quả, so sánh/phân biệt, ứng dụng, kết luận và các điểm dễ nhầm.
+    Các phần lớn phải có câu hỏi; không bỏ qua phần ngắn nếu phần đó chứa thông tin quan trọng.
+  </coverage_audit>
+  <question_design>
+    - Phân bổ hợp lý Nhận biết, Thông hiểu, Vận dụng; ưu tiên kiểm tra hiểu bản chất thay vì học thuộc máy móc.
+    - Mỗi câu nên kiểm tra một ý chính hoặc một cụm ý liên quan chặt chẽ.
+    - Distractors phải là các lỗi nhầm lẫn hợp lý có thể suy ra từ chính tài liệu, không dùng phương án vô nghĩa.
+    - Với nội dung dễ nhầm, ưu tiên câu hỏi phân biệt trực tiếp.
+    - Với quy trình/công thức, có thể hỏi điều kiện, thứ tự, cách áp dụng hoặc hệ quả nếu nguồn có đề cập.
+    - Explanation phải giải thích vì sao đáp án đúng và vì sao các lựa chọn sai không đúng, chỉ dựa trên nguồn.
+  </question_design>
   <output_format>
-    Trả về JSON thuần túy: {"quiz_title":"...","questions":[{"id":"q1","cognitive_level":"Recall | Understanding | Application","question":"...","options":[{"key":"A","text":"..."},{"key":"B","text":"..."},{"key":"C","text":"..."},{"key":"D","text":"..."}],"correct_answer":"A","explanation":"...","source_reference":"..."}]}
+    Trả về JSON thuần túy:
+    {"quiz_title":"...","coverage_summary":"...","questions":[{"id":"q1","cognitive_level":"Recall | Understanding | Application","topic":"...","question":"...","options":[{"key":"A","text":"..."},{"key":"B","text":"..."},{"key":"C","text":"..."},{"key":"D","text":"..."}],"correct_answer":"A","explanation":"...","source_reference":"..."}]}
   </output_format>
 </task_instruction>`,
 
@@ -3767,16 +3763,40 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
 </task_instruction>`,
 
       studyGuide: `<task_instruction>
-  <task_name>CREATE_STUDY_GUIDE_AND_BRIEFING_DOC</task_name>
-  <objective>Biên soạn Study Guide toàn diện từ toàn bộ tài liệu nguồn.</objective>
-  <structure_requirements>
-    1. EXECUTIVE SUMMARY.
-    2. KEY CONCEPTS & DEFINITIONS: bảng Markdown [Thuật ngữ | Định nghĩa bám nguồn | Ứng dụng/Ngữ cảnh].
-    3. THEMATIC DEEP DIVE: phân tích từng phần, keyword, quan hệ nhân-quả.
-    4. CRITICAL NUANCES & COMMON MISCONCEPTIONS.
-    5. COMPREHENSION FAQs: 3-5 câu hỏi đào sâu.
-  </structure_requirements>
-  <tone_and_format>Học thuật, mạch lạc, trực diện; Markdown với #, ##, ###.</tone_and_format>
+  <task_name>CREATE_COMPREHENSIVE_SCIENTIFIC_KNOWLEDGE_SUMMARY</task_name>
+  <objective>
+    Biên soạn một bản TỔNG HỢP KIẾN THỨC TOÀN DIỆN, có cấu trúc khoa học và tối ưu cho việc học, ôn tập và Active Recall từ TOÀN BỘ tài liệu nguồn.
+  </objective>
+  <coverage_audit>
+    Đầu tiên phải quét toàn tài liệu theo cấu trúc chương/phần/đoạn. Không bỏ sót nội dung quan trọng chỉ vì nội dung nằm ở phần cuối, chú thích hoặc ví dụ.
+    Phải thu nhận: mục tiêu/chủ đề, thuật ngữ và định nghĩa, ý chính, chi tiết then chốt, nguyên lý/cơ chế, công thức, điều kiện, quy trình, ví dụ, số liệu/mốc, quan hệ nhân-quả, so sánh, ngoại lệ, lỗi dễ nhầm và kết luận.
+  </coverage_audit>
+  <learning_design>
+    Sắp xếp theo trình tự sư phạm: nền tảng → khái niệm cốt lõi → mối liên hệ → cơ chế/quy trình → ví dụ/ứng dụng → ngoại lệ → điểm dễ nhầm → tự kiểm tra.
+    Phân biệt rõ kiến thức "phải nhớ", "phải hiểu" và "phải biết cách áp dụng" khi nguồn cho phép.
+    Ưu tiên bảng, gạch đầu dòng, sơ đồ phân cấp và các câu kết luận ngắn để dễ quét lại.
+    Không tự bổ sung kiến thức ngoài nguồn; khi nguồn thiếu thông tin thì ghi rõ "Tài liệu nguồn không cung cấp thông tin này".
+  </learning_design>
+  <output_format>
+    Trả về JSON thuần túy theo cấu trúc:
+    {
+      "study_guide_title":"...",
+      "executive_summary":"Tóm lược bản chất tài liệu trong một đoạn ngắn",
+      "learning_objectives":["..."],
+      "knowledge_map":[
+        {"section":"Phần/chủ đề","core_ideas":["..."],"must_remember":["..."],"must_understand":["..."],"application_points":["..."]}
+      ],
+      "key_concepts":[{"term":"...","definition":"...","context":"...","source_reference":"..."}],
+      "processes_or_mechanisms":[{"name":"...","steps":["..."],"why_it_matters":"..."}],
+      "comparisons":[{"criterion":"...","items":[{"name":"...","difference":"..."}]}],
+      "critical_nuances":["..."],
+      "common_misconceptions":[{"mistake":"...","correct_understanding":"..."}],
+      "examples_and_applications":["..."],
+      "formulas_or_rules":["..."],
+      "final_review_checklist":["..."],
+      "self_test_questions":["..."]
+    }
+  </output_format>
 </task_instruction>`,
 
       presentation: `<task_instruction>
@@ -4589,7 +4609,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
             const parsed = extractJsonFromAiText(reply);
             const detectedType = detectArtifactFromJson(parsed) || taskType;
 
-            if (!parsed && ['flashcards','quiz','mindmap','dataTable','presentation','podcast','infographic'].includes(taskType)) {
+            if (!parsed && ['flashcards','quiz','mindmap','studyGuide','dataTable','presentation','podcast','infographic'].includes(taskType)) {
               throw new Error('AI không trả về JSON hợp lệ cho tác vụ ' + typeLabel(taskType) + '.');
             }
 
@@ -4739,6 +4759,9 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         countText = `${Array.isArray(artifact.payload?.slides) ? artifact.payload.slides.length : 0} slide`;
       } else if (artifact.type === 'dataTable') {
         countText = `${Array.isArray(artifact.payload?.tables) ? artifact.payload.tables.length : 0} bảng`;
+      } else if (artifact.type === 'studyGuide') {
+        const sections = Array.isArray(artifact.payload?.knowledge_map) ? artifact.payload.knowledge_map.length : 0;
+        countText = `${sections} phần kiến thức`;
       } else {
         countText = `${artifact.sourceCount} nguồn`;
       }
@@ -7385,10 +7408,10 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
     const GEMINI_STUDIO_BUTTON_PROMPTS = {
       podcast: 'Tạo một Audio Overview / Deep Dive Podcast toàn diện từ tài liệu nguồn này.',
       presentation: 'Tạo một bản trình bày (Slide Deck) hoàn chỉnh từ tài liệu nguồn này.',
-      studyGuide: 'Tạo một bản tổng quan / hướng dẫn học tập toàn diện từ tài liệu nguồn này.',
+      studyGuide: 'Hãy tạo bản TỔNG HỢP KIẾN THỨC TOÀN DIỆN, khoa học, có hệ thống và tối ưu để dễ học từ toàn bộ tài liệu nguồn.',
       mindmap: 'Tạo một bản đồ tư duy đa cấp bao quát toàn bộ tài liệu nguồn này.',
-      flashcards: 'Hãy tạo bộ thẻ ghi nhớ Flashcards toàn diện từ tài liệu nguồn này.',
-      quiz: 'Hãy tạo một bài kiểm tra trắc nghiệm chẩn đoán toàn diện từ tài liệu nguồn này.',
+      flashcards: 'Hãy tạo bộ thẻ ghi nhớ TOÀN DIỆN từ toàn bộ tài liệu nguồn; kiểm tra coverage để không bỏ sót chi tiết quan trọng.',
+      quiz: 'Hãy tạo một bài kiểm tra trắc nghiệm CHẨN ĐOÁN TOÀN DIỆN; hỏi đủ các chi tiết quan trọng trong toàn bộ tài liệu và không bỏ sót phần nào.',
       infographic: 'Hãy tạo bản đồ họa thông tin (Infographic) từ tài liệu nguồn này.',
       dataTable: 'Hãy tạo các bảng dữ liệu / ma trận so sánh phù hợp từ tài liệu nguồn này.'
     };
@@ -7496,6 +7519,48 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
         (artifact.payload.tables || []).forEach((t, i) => {
           html += `<div style="margin-top:14px;font-weight:850;">${i+1}. ${escapeHTML(String(t.table_title || 'Bảng dữ liệu'))}</div><p style="font-size:12px;color:var(--text-muted);">${escapeHTML(String(t.description || ''))}</p>${renderMarkdownTableFromJson(t)}`;
         });
+      } else if (artifact.type === 'studyGuide') {
+        const p = artifact.payload || {};
+        const esc = value => escapeHTML(String(value ?? ''));
+        if (p.executive_summary) html += `<section style="margin-top:14px;"><h3>Tóm lược cốt lõi</h3><p style="margin-top:7px;line-height:1.65;color:var(--text-muted);">${esc(p.executive_summary)}</p></section>`;
+        if (Array.isArray(p.learning_objectives) && p.learning_objectives.length) html += `<section style="margin-top:14px;"><h3>Mục tiêu học tập</h3><ul style="margin:8px 0 0 18px;">${p.learning_objectives.map(x=>`<li style="margin:5px 0;">${esc(x)}</li>`).join('')}</ul></section>`;
+        if (Array.isArray(p.knowledge_map) && p.knowledge_map.length) {
+          html += `<section style="margin-top:14px;"><h3>Bản đồ kiến thức</h3>`;
+          p.knowledge_map.forEach((s,i)=>{
+            html += `<article class="artifact-slide"><div class="artifact-chip">Phần ${i+1}</div><h4 style="margin-top:8px;">${esc(s.section || '')}</h4>`;
+            if (Array.isArray(s.core_ideas) && s.core_ideas.length) html += `<div style="margin-top:8px;"><strong>Ý cốt lõi</strong><ul style="margin:5px 0 0 18px;">${s.core_ideas.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            if (Array.isArray(s.must_remember) && s.must_remember.length) html += `<div style="margin-top:8px;"><strong>Phải nhớ</strong><ul style="margin:5px 0 0 18px;">${s.must_remember.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            if (Array.isArray(s.must_understand) && s.must_understand.length) html += `<div style="margin-top:8px;"><strong>Phải hiểu</strong><ul style="margin:5px 0 0 18px;">${s.must_understand.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            if (Array.isArray(s.application_points) && s.application_points.length) html += `<div style="margin-top:8px;"><strong>Điểm áp dụng</strong><ul style="margin:5px 0 0 18px;">${s.application_points.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
+            html += `</article>`;
+          });
+          html += `</section>`;
+        }
+        if (Array.isArray(p.key_concepts) && p.key_concepts.length) {
+          html += `<section style="margin-top:14px;"><h3>Khái niệm trọng tâm</h3><div class="artifact-table-wrap"><table><thead><tr><th>Thuật ngữ</th><th>Định nghĩa</th><th>Ngữ cảnh</th></tr></thead><tbody>`;
+          p.key_concepts.forEach(x=>{ html += `<tr><td><strong>${esc(x.term)}</strong></td><td>${esc(x.definition)}</td><td>${esc(x.context)}</td></tr>`; });
+          html += `</tbody></table></div></section>`;
+        }
+        if (Array.isArray(p.processes_or_mechanisms) && p.processes_or_mechanisms.length) {
+          html += `<section style="margin-top:14px;"><h3>Cơ chế & Quy trình</h3>`;
+          p.processes_or_mechanisms.forEach((x,i)=>{ html += `<article class="artifact-slide"><strong>${i+1}. ${esc(x.name)}</strong>${Array.isArray(x.steps)&&x.steps.length?`<ol style="margin:7px 0 0 20px;">${x.steps.map(y=>`<li>${esc(y)}</li>`).join('')}</ol>`:''}${x.why_it_matters?`<p style="margin-top:7px;color:var(--text-muted);"><strong>Ý nghĩa:</strong> ${esc(x.why_it_matters)}</p>`:''}</article>`; });
+          html += `</section>`;
+        }
+        if (Array.isArray(p.comparisons) && p.comparisons.length) {
+          html += `<section style="margin-top:14px;"><h3>So sánh & Phân biệt</h3>`;
+          p.comparisons.forEach((x,i)=>{ html += `<article class="artifact-slide"><strong>${i+1}. ${esc(x.criterion)}</strong><ul style="margin:7px 0 0 18px;">${(x.items||[]).map(it=>`<li><strong>${esc(it.name)}:</strong> ${esc(it.difference)}</li>`).join('')}</ul></article>`; });
+          html += `</section>`;
+        }
+        const renderListSection = (title, arr) => {
+          if (!Array.isArray(arr) || !arr.length) return '';
+          return `<section style="margin-top:14px;"><h3>${esc(title)}</h3><ul style="margin:8px 0 0 18px;">${arr.map(x=>`<li style="margin:5px 0;">${esc(x)}</li>`).join('')}</ul></section>`;
+        };
+        html += renderListSection('Điểm tinh tế cần chú ý', p.critical_nuances);
+        if (Array.isArray(p.common_misconceptions) && p.common_misconceptions.length) html += `<section style="margin-top:14px;"><h3>Lỗi dễ nhầm</h3>${p.common_misconceptions.map((x,i)=>`<article class="artifact-slide"><strong>${i+1}. ${esc(x.mistake)}</strong><p style="margin-top:6px;color:var(--text-muted);">${esc(x.correct_understanding)}</p></article>`).join('')}</section>`;
+        html += renderListSection('Ví dụ & Ứng dụng', p.examples_and_applications);
+        html += renderListSection('Công thức & Quy tắc', p.formulas_or_rules);
+        html += renderListSection('Checklist ôn tập cuối cùng', p.final_review_checklist);
+        html += renderListSection('Câu hỏi tự kiểm tra', p.self_test_questions);
       } else if (artifact.type === 'presentation') {
         (artifact.payload.slides || []).forEach((s, i) => {
           html += `<article class="artifact-slide"><div class="artifact-chip">Slide ${i+1}</div><h3 style="margin-top:8px;">${escapeHTML(String(s.title || ''))}</h3><ul style="margin:8px 0 0 18px;">${(s.bullets || []).map(b => `<li>${escapeHTML(String(b))}</li>`).join('')}</ul>${s.visual_concept ? `<p style="font-size:12px;color:var(--text-muted);margin-top:8px;"><strong>Visual:</strong> ${escapeHTML(String(s.visual_concept))}</p>` : ''}${s.speaker_notes ? `<details style="margin-top:8px;"><summary>Speaker notes</summary><p style="margin-top:6px;line-height:1.55;">${escapeHTML(String(s.speaker_notes))}</p></details>` : ''}</article>`;
