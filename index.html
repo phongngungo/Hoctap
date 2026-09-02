@@ -673,40 +673,7 @@
       max-width: 88%;
       box-shadow: var(--shadow-sm);
     }
-
-    .gemini-ai-image-wrap {
-      margin-top: 12px;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      background: var(--surface-soft);
-    }
-    .gemini-ai-image {
-      display: block;
-      width: 100%;
-      max-width: 760px;
-      height: auto;
-      cursor: zoom-in;
-      background: var(--surface-soft);
-    }
-    .gemini-ai-image-caption {
-      padding: 7px 10px;
-      font-size: 11px;
-      line-height: 1.35;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-    }
-    .gemini-ai-image-error {
-      margin-top: 10px;
-      padding: 8px 10px;
-      border-radius: 10px;
-      background: var(--warning-bg);
-      color: var(--text-muted);
-      font-size: 12px;
-      line-height: 1.4;
-    }
-
-    .gemini-chips-container {
+.gemini-chips-container {
       display: flex;
       flex-shrink: 0;
       gap: 10px;
@@ -3240,7 +3207,6 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     const aiMultimodalContextCache = new Map();
     // Ảnh AI sinh ra chỉ nằm trong runtime cache để không làm phình localStorage.
     // Nội dung chat vẫn lưu được; ảnh hiện hành vẫn hiển thị trực tiếp trong phiên.
-    const aiGeneratedImageCache = new Map();
 
     function getFileExtension(fileName) {
       const name = String(fileName || '').toLowerCase();
@@ -3729,16 +3695,6 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     - Ứng dụng phương pháp Feynman: Đơn giản hóa các cơ chế phức tạp bằng ngôn từ trực diện, logic, sử dụng các phép tương phản và phân cấp rõ ràng.
   </pedagogical_standards>
 
-  <visual_learning_rules>
-    1. VISUAL-FIRST WHEN HELPFUL: Nếu kiến thức có tính trừu tượng, không gian, cơ chế, cấu tạo, quy trình, hiện tượng tự nhiên, lịch sử/văn hóa, vật thể thực tế hoặc khó hình dung bằng chữ/con số, hãy chủ động đề xuất một minh hoạ trực quan. Khi phù hợp, đặt một <visual_prompt> rõ ràng ở cuối câu trả lời để ứng dụng tự tạo/hiển thị hình ngay trong chat.
-    2. DO NOT OVERUSE: Không tạo ảnh cho mọi câu trả lời. Chỉ tạo khi hình ảnh thực sự giúp hiểu/nhớ tốt hơn văn bản.
-    3. VISUAL_PROMPT_MARKER: Với câu trả lời chat thông thường (không phải tác vụ JSON/Studio), nếu cần ảnh, hãy thêm đúng một khối ở cuối câu trả lời:
-       <visual_prompt>mô tả ngắn, chính xác hình cần tạo để học nội dung trên</visual_prompt>
-       Không giải thích marker này và không đặt marker trong code block.
-    4. GROUNDING: Nội dung hình phải bám sát kiến thức đã nêu và tài liệu nguồn; không tự thêm số liệu, tên riêng, nhãn hoặc kết luận không có căn cứ.
-    5. EDUCATIONAL_STYLE: Ưu tiên sơ đồ giải thích, cắt lớp, flowchart, timeline, diagram, labelled illustration hoặc infographic học tập; khi phù hợp có thể dùng phong cách bán hiện thực để liên hệ thực tiễn.
-  </visual_learning_rules>
-
   <memory_and_consistency_rules>
     1. CONTEXT AUDIT: Trước khi trả lời tin nhắn mới, rà soát lịch sử hội thoại được cung cấp trong <conversation_context>.
     2. ZERO CONTRADICTION: Không mâu thuẫn với định nghĩa, công thức, quy ước hoặc kết luận đã thiết lập trước đó.
@@ -3812,40 +3768,98 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       studyGuide: `<task_instruction>
   <task_name>CREATE_COMPREHENSIVE_SCIENTIFIC_KNOWLEDGE_SUMMARY</task_name>
   <objective>
-    Biên soạn một bản TỔNG HỢP KIẾN THỨC TOÀN DIỆN, có cấu trúc khoa học và tối ưu cho việc học, ôn tập và Active Recall từ TOÀN BỘ tài liệu nguồn.
+    Tạo một bản TỔNG HỢP KIẾN THỨC TOÀN DIỆN từ TOÀN BỘ nguồn được cung cấp, đồng thời tối ưu cho khả năng hiểu, ghi nhớ và ôn thi.
+    Mục tiêu kép: (1) KHÔNG BỎ SÓT kiến thức có giá trị; (2) KHÔNG biến tài liệu thành một khối chữ khó học.
   </objective>
-  <coverage_audit>
-    Đầu tiên phải quét toàn tài liệu theo cấu trúc chương/phần/đoạn. Không bỏ sót nội dung quan trọng chỉ vì nội dung nằm ở phần cuối, chú thích hoặc ví dụ.
-    Phải thu nhận: mục tiêu/chủ đề, thuật ngữ và định nghĩa, ý chính, chi tiết then chốt, nguyên lý/cơ chế, công thức, điều kiện, quy trình, ví dụ, số liệu/mốc, quan hệ nhân-quả, so sánh, ngoại lệ, lỗi dễ nhầm và kết luận.
-  </coverage_audit>
-    <learning_design>
-    Sắp xếp theo trình tự sư phạm: nền tảng → khái niệm cốt lõi → mối liên hệ → cơ chế/quy trình → ví dụ/ứng dụng → ngoại lệ → điểm dễ nhầm → tự kiểm tra.
-    Phân biệt rõ kiến thức "phải nhớ", "phải hiểu" và "phải biết cách áp dụng" khi nguồn cho phép.
-    Ưu tiên bảng, gạch đầu dòng, sơ đồ phân cấp và các câu kết luận ngắn để dễ quét lại.
-    Với phần trừu tượng hoặc khó hình dung, BẮT BUỘC thêm lớp "minh hoạ trực quan": mô tả ngắn, cụ thể hình ảnh/sơ đồ phù hợp (diagram, cắt lớp, flowchart, timeline, infographic hoặc minh hoạ thực tế) để người học dễ hình dung. Mỗi minh hoạ phải nêu rõ đối tượng chính và mối quan hệ cần nhìn thấy.
-    Không tự bổ sung kiến thức ngoài nguồn; khi nguồn thiếu thông tin thì ghi rõ "Tài liệu nguồn không cung cấp thông tin này".
+
+  <source_scope_and_grounding>
+    - Coi TẤT CẢ tài liệu, các phần và đoạn trong <source_documents> là một tập nguồn thống nhất của cùng một môn/chủ đề.
+    - Đọc và tổng hợp xuyên tài liệu; không chỉ dựa vào tài liệu đầu tiên hoặc phần đầu.
+    - Khi có nhiều tài liệu nói cùng một kiến thức, gộp phần trùng lặp nhưng giữ lại mọi chi tiết bổ sung, điều kiện, ngoại lệ, ví dụ và cách diễn đạt quan trọng.
+    - Khi hai nguồn trình bày khác nhau, không tự ý sửa hoặc hòa giải. Trình bày rõ sự khác biệt và ghi nguồn tương ứng.
+    - CHỈ sử dụng tri thức được nguồn hỗ trợ. Không tự thêm kiến thức bên ngoài. Nếu một điểm cần thiết nhưng nguồn không có, ghi rõ: "Tài liệu nguồn không cung cấp thông tin này".
+    - Tuyệt đối không được kết luận "tài liệu không cung cấp thông tin" chỉ vì một đoạn nguồn ngắn, một file khó đọc, hoặc một phần dữ liệu không xuất hiện trong đoạn trích hiện tại. Trước khi kết luận thiếu thông tin, phải kiểm tra toàn bộ nguồn đã nhận.
+  </source_scope_and_grounding>
+
+  <two_pass_coverage_audit>
+    <pass_1_inventory>
+      Trước tiên lập "bản đồ bao phủ" nội bộ theo từng tài liệu → chương/phần → chủ đề → ý nhỏ.
+      Đánh dấu các đơn vị kiến thức nguyên tử (atomic knowledge units): định nghĩa, thuật ngữ, công thức, điều kiện, quy luật, cơ chế, bước quy trình, ví dụ, số liệu, mốc, bảng/so sánh, ngoại lệ, nguyên nhân-kết quả, cảnh báo và kết luận.
+      Không được bỏ qua nội dung ở cuối file, chú thích, ví dụ, ghi chú, bảng, tiêu đề phụ hoặc đoạn ngắn.
+    </pass_1_inventory>
+    <pass_2_verification>
+      Sau khi viết bản tổng hợp, đối chiếu lại với inventory và tự kiểm tra coverage.
+      Mọi atomic knowledge unit quan trọng phải xuất hiện ít nhất một lần trong phần phù hợp.
+      Nếu một chi tiết chưa có chỗ đặt tự nhiên, thêm vào "critical_nuances" hoặc "details_not_to_forget" thay vì bỏ đi.
+      Loại bỏ chỉ những câu lặp lại không tạo thêm thông tin; KHÔNG loại bỏ chi tiết chỉ vì nó nhỏ.
+    </pass_2_verification>
+  </two_pass_coverage_audit>
+
+  <learning_design>
+    Sắp xếp theo logic sư phạm:
+    1. Bức tranh lớn: học phần này nói về gì và các phần liên kết thế nào.
+    2. Nền tảng: thuật ngữ/khái niệm cần biết trước.
+    3. Kiến thức cốt lõi: quy luật, cơ chế, công thức, nguyên lý.
+    4. Cách dùng: quy trình, điều kiện áp dụng, ví dụ và ứng dụng có trong nguồn.
+    5. Phân biệt: so sánh, ngoại lệ, trường hợp đặc biệt, lỗi dễ nhầm.
+    6. Chốt nhớ: các câu kết luận ngắn, từ khóa và checklist.
+    - Mỗi ý dài nên được tách thành các câu/nguyên ý nhỏ, ưu tiên 1 ý chính/1 dòng.
+    - Giải thích theo kiểu Feynman: "là gì → vì sao → hoạt động thế nào → khi nào dùng" khi nguồn có đủ dữ liệu.
+    - Với công thức: nêu ý nghĩa từng đại lượng, điều kiện/giả định, khi nào dùng và lỗi dễ nhầm nếu nguồn đề cập.
+    - Với quy trình: trình bày theo thứ tự bước và nêu mục đích/kết quả của bước khi có nguồn.
+    - Với bảng hoặc cặp khái niệm dễ nhầm: ưu tiên bảng so sánh ngắn, tiêu chí rõ ràng.
+    - Không biến bản tổng hợp thành một bài văn dài. Ưu tiên heading, bullet, bảng, câu chốt và cấu trúc phân cấp.
+    - Không rút gọn đến mức mất dữ kiện. "Dễ học" nghĩa là tổ chức thông minh, không phải cắt bỏ kiến thức.
   </learning_design>
+
+  <priority_rules>
+    - Ưu tiên 1: tính đầy đủ và trung thành với nguồn.
+    - Ưu tiên 2: cấu trúc và khả năng quét nhanh.
+    - Ưu tiên 3: diễn giải dễ hiểu.
+    - Ưu tiên 4: cô đọng phần trùng lặp.
+    - Không đánh đổi ưu tiên 1 để làm văn bản ngắn hơn.
+    - Không dùng số lượng mục cố định; độ dài đầu ra phải tỷ lệ với độ dài và độ chi tiết của nguồn.
+  </priority_rules>
+
+  <final_quality_check>
+    Trước khi trả JSON, tự hỏi:
+    - Tôi đã đi qua TỪNG tài liệu chưa?
+    - Tôi có bỏ sót chương/phần, ví dụ, công thức, điều kiện, ngoại lệ hoặc chi tiết nhỏ nhưng có giá trị không?
+    - Các phần trùng nhau đã gộp mà không làm mất thông tin chưa?
+    - Người học mới đọc có hiểu được "đây là gì, vì sao quan trọng, liên hệ với gì" không?
+    - Có điểm nào tôi vô tình bổ sung từ kiến thức ngoài nguồn không?
+  </final_quality_check>
+
   <output_format>
     Trả về JSON thuần túy theo cấu trúc:
     {
       "study_guide_title":"...",
-      "executive_summary":"Tóm lược bản chất tài liệu trong một đoạn ngắn",
+      "executive_summary":"Bức tranh lớn trong 1-3 đoạn ngắn, dùng ngôn ngữ dễ hiểu",
       "learning_objectives":["..."],
+      "subject_structure":[{"section":"...","purpose":"...","prerequisites":["..."],"connections_to_other_sections":["..."]}],
       "knowledge_map":[
-        {"section":"Phần/chủ đề","core_ideas":["..."],"must_remember":["..."],"must_understand":["..."],"application_points":["..."]}
+        {
+          "section":"Phần/chủ đề",
+          "core_ideas":["..."],
+          "must_remember":["..."],
+          "must_understand":["..."],
+          "how_to_apply":["..."],
+          "examples_from_source":["..."],
+          "easy_to_confuse":["..."]
+        }
       ],
-      "visual_learning_aids":[
-        {"topic":"...","visual_type":"diagram | labelled_illustration | cross_section | flowchart | timeline | infographic | real_world_scene","description":"Mô tả chính xác minh hoạ giúp hiểu nội dung","reason":"Vì sao minh hoạ này hữu ích"}
-      ],
-      "key_concepts":[{"term":"...","definition":"...","context":"...","source_reference":"..."}],
-      "processes_or_mechanisms":[{"name":"...","steps":["..."],"why_it_matters":"..."}],
-      "comparisons":[{"criterion":"...","items":[{"name":"...","difference":"..."}]}],
+      "key_concepts":[{"term":"...","definition":"...","plain_explanation":"...","context":"...","source_reference":"..."}],
+      "processes_or_mechanisms":[{"name":"...","overview":"...","steps":["..."],"why_it_matters":"...","conditions_or_limits":["..."],"source_reference":"..."}],
+      "comparisons":[{"title":"...","criteria":["..."],"items":[{"name":"...","details":["..."]}],"key_takeaway":"..."}],
+      "formulas_or_rules":[{"name":"...","expression":"...","meaning":"...","variables":["..."],"conditions":["..."],"usage":"...","common_traps":["..."],"source_reference":"..."}],
       "critical_nuances":["..."],
-      "common_misconceptions":[{"mistake":"...","correct_understanding":"..."}],
-      "examples_and_applications":["..."],
-      "formulas_or_rules":["..."],
+      "details_not_to_forget":["..."],
+      "common_misconceptions":[{"mistake":"...","correct_understanding":"...","why_confusing":"..."}],
+      "examples_and_applications":[{"example":"...","what_it_illustrates":"...","steps_or_reasoning":["..."]}],
+      "quick_memory_hooks":["..."],
       "final_review_checklist":["..."],
-      "self_test_questions":["..."]
+      "self_test_questions":["..."],
+      "coverage_report":{"source_count":"...","covered_sections":["..."],"potential_gaps":["..."]}
     }
   </output_format>
 </task_instruction>`,
@@ -4232,160 +4246,13 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       return messages.map((m, i) => `${i + 1}. ${m.role === 'user' ? 'USER' : 'AI'}: ${String(m.text || '').replace(/\s+/g, ' ').slice(0, 700)}`).join('\n');
     }
 
-    function extractVisualPrompt(rawText) {
-      const raw = String(rawText || '');
-      const match = raw.match(/<visual_prompt>\s*([\s\S]*?)\s*<\/visual_prompt>/i);
-      if (!match) return { text: raw, prompt: '' };
-      const cleanText = raw.replace(match[0], '').replace(/\n{3,}/g, '\n\n').trim();
-      return { text: cleanText, prompt: String(match[1] || '').trim() };
-    }
-
-    // Một số model vẫn trả về mô tả ảnh dù không giữ marker <visual_prompt>.
-    // Fallback này biến chính mô tả đó thành prompt để người học vẫn nhận được ảnh.
-    function deriveVisualPromptFromText(rawText) {
-      const raw = String(rawText || '').trim();
-      if (!raw) return '';
-      const explicit = extractVisualPrompt(raw);
-      if (explicit.prompt) return explicit.prompt;
-
-      const cleaned = raw
-        .replace(/```[\s\S]*?```/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-
-      const patterns = [
-        /(?:graph diagram|diagram|illustration|visualization|schematic|educational figure)[^.!?]*(?:[.!?][^.!?]*)?/i,
-        /(?:mô tả sơ đồ trực quan|minh hoạ trực quan|minh họa trực quan|sơ đồ minh hoạ|sơ đồ minh họa)[\s:：-]*([\s\S]{30,1200})/i
-      ];
-      for (const re of patterns) {
-        const m = cleaned.match(re);
-        if (m) return String(m[0] || m[1] || '').trim();
-      }
-      if (shouldAutoIllustrateAnswer(cleaned)) return buildAutomaticVisualBrief(cleaned);
-      return '';
-    }
-
-    function isVisualChatEligible(studioTask) {
-      return !studioTask;
-    }
-
-    function shouldAutoIllustrateAnswer(rawText) {
-      const t = String(rawText || '').toLowerCase();
-      if (!t) return false;
-      return /(cấu tạo|cơ chế|quy trình|các bước|chu trình|mạch điện|đồ thị|biểu đồ|sơ đồ|hệ thống|nguyên lý|phản ứng|quang hợp|hô hấp|phân tử|nguyên tử|tế bào|cơ quan|giải phẫu|địa chất|lịch sử|timeline|flowchart|diagram|graph|visual|trực quan|hình dung|không gian|lực|điện trường|từ trường|sóng|dao động)/i.test(t);
-    }
-
-    function buildAutomaticVisualBrief(rawText) {
-      const clean = String(rawText || '').replace(/<visual_prompt>[\s\S]*?<\/visual_prompt>/gi, '').replace(/\s+/g, ' ').trim();
-      if (!clean) return '';
-      const compact = clean.length > 850 ? clean.slice(0, 850) + '…' : clean;
-      return `Tạo một sơ đồ minh hoạ học tập bám sát nội dung sau. Ưu tiên thể hiện trực quan các đối tượng, mối quan hệ, diễn biến theo thời gian hoặc các bước; không thêm dữ kiện ngoài nội dung. Nội dung: ${compact}`;
-    }
-
-    // Fallback ảnh học tập chạy hoàn toàn trong trình duyệt khi Gemini Image không có quota.
-    // Đây là SVG thực sự nên vẫn hiển thị trực tiếp như một ảnh trong bong bóng chat,
-    // không phụ thuộc thêm dịch vụ bên ngoài.
-    function svgToBase64Data(svg) {
-      return btoa(unescape(encodeURIComponent(svg)));
-    }
-
-    function makeLocalEducationalImage(visualPrompt, sourceContext) {
-      const prompt = String(visualPrompt || '').trim();
-      const lower = prompt.toLowerCase();
-      const subject = String(sourceContext?.title || 'Minh hoạ học tập').trim().slice(0, 90);
-      const safe = (v) => String(v || '').replace(/[<>&"']/g, ch => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[ch]));
-
-      // Mẫu chuyên dụng cho mạch R-L / đáp ứng quá độ vì đây là kiểu nội dung
-      // thường cần nhìn trực quan hơn công thức.
-      if (/r\s*[-–—]?\s*l|mạch\s*r\s*[-–—]?\s*l|rl circuit|transient response|dòng điện.*cuộn cảm|cuộn cảm/.test(lower)) {
-        const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
-  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
-  <text x="60" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">Đáp ứng quá độ của mạch R–L</text>
-  <text x="60" y="110" font-family="Arial, sans-serif" font-size="18" fill="#64748b">Minh hoạ trực quan cho ${safe(subject)}</text>
-
-  <rect x="60" y="150" width="500" height="230" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
-  <text x="90" y="192" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e293b">Mạch điện lý tưởng</text>
-  <line x1="120" y1="280" x2="220" y2="280" stroke="#334155" stroke-width="5"/>
-  <rect x="220" y="248" width="90" height="64" rx="8" fill="#e2e8f0" stroke="#334155" stroke-width="4"/>
-  <text x="265" y="289" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">R</text>
-  <line x1="310" y1="280" x2="350" y2="280" stroke="#334155" stroke-width="5"/>
-  <path d="M350 280 c18 -45 36 45 54 0 c18 -45 36 45 54 0 c18 -45 36 45 54 0" fill="none" stroke="#334155" stroke-width="5"/>
-  <text x="440" y="335" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#0f172a">L (cuộn cảm)</text>
-  <line x1="512" y1="280" x2="520" y2="280" stroke="#334155" stroke-width="5"/>
-  <line x1="520" y1="280" x2="520" y2="350" stroke="#334155" stroke-width="5"/>
-  <line x1="520" y1="350" x2="120" y2="350" stroke="#334155" stroke-width="5"/>
-  <line x1="120" y1="350" x2="120" y2="280" stroke="#334155" stroke-width="5"/>
-  <circle cx="120" cy="280" r="28" fill="#dbeafe" stroke="#2563eb" stroke-width="4"/>
-  <text x="120" y="288" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1d4ed8">e</text>
-  <text x="90" y="414" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Khi đóng mạch, dòng qua L tăng dần.</text>
-
-  <rect x="600" y="150" width="540" height="500" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="3"/>
-  <text x="630" y="192" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e293b">Dòng điện theo thời gian</text>
-  <line x1="680" y1="580" x2="1080" y2="580" stroke="#334155" stroke-width="4"/>
-  <line x1="680" y1="580" x2="680" y2="250" stroke="#334155" stroke-width="4"/>
-  <text x="1085" y="605" font-family="Arial, sans-serif" font-size="18" fill="#334155">t</text>
-  <text x="648" y="252" font-family="Arial, sans-serif" font-size="18" fill="#334155">i</text>
-  <line x1="680" y1="330" x2="1080" y2="330" stroke="#94a3b8" stroke-width="3" stroke-dasharray="10 8"/>
-  <text x="1090" y="336" font-family="Arial, sans-serif" font-size="17" fill="#64748b">I<sub>xl</sub></text>
-  <path d="M680 580 C720 575 748 540 790 490 C840 430 885 380 940 350 C985 333 1030 330 1080 330" fill="none" stroke="#2563eb" stroke-width="7"/>
-  <circle cx="680" cy="580" r="8" fill="#2563eb"/>
-  <text x="700" y="620" font-family="Arial, sans-serif" font-size="17" fill="#64748b">t = 0</text>
-  <line x1="680" y1="640" x2="900" y2="640" stroke="#ef4444" stroke-width="5"/>
-  <line x1="680" y1="632" x2="680" y2="648" stroke="#ef4444" stroke-width="5"/>
-  <line x1="900" y1="632" x2="900" y2="648" stroke="#ef4444" stroke-width="5"/>
-  <text x="790" y="676" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#dc2626">Δt: thời gian thiết lập quá độ</text>
-  <text x="710" y="235" font-family="Arial, sans-serif" font-size="16" fill="#64748b">đường cong tăng dần, tiệm cận trạng thái xác lập</text>
-</svg>`;
-        return { mimeType: 'image/svg+xml', data: svgToBase64Data(svg), prompt, localFallback: true };
-      }
-
-      // Fallback tổng quát: biến brief thành sơ đồ học tập gồm khái niệm → quan hệ → kết luận.
-      const brief = prompt.length > 260 ? prompt.slice(0, 260) + '…' : prompt;
-      const svg = `
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
-  <rect width="1200" height="720" rx="28" fill="#f8fafc"/>
-  <text x="60" y="72" font-family="Arial, sans-serif" font-size="34" font-weight="700" fill="#0f172a">Minh hoạ học tập</text>
-  <text x="60" y="110" font-family="Arial, sans-serif" font-size="18" fill="#64748b">${safe(subject)}</text>
-  <rect x="70" y="165" width="300" height="150" rx="22" fill="#dbeafe" stroke="#93c5fd" stroke-width="3"/>
-  <text x="220" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#1e3a8a">1. KHÁI NIỆM</text>
-  <text x="95" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Điểm cần hình dung</text>
-  <text x="95" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">${safe(brief.slice(0, 90))}</text>
-  <path d="M370 240 H470" stroke="#64748b" stroke-width="6" marker-end="url(#a)"/>
-  <rect x="470" y="165" width="300" height="150" rx="22" fill="#dcfce7" stroke="#86efac" stroke-width="3"/>
-  <text x="620" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#166534">2. MỐI QUAN HỆ</text>
-  <text x="495" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Nguyên nhân → diễn biến</text>
-  <text x="495" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">Quan sát bằng sơ đồ thay vì chỉ đọc số</text>
-  <path d="M770 240 H870" stroke="#64748b" stroke-width="6" marker-end="url(#a)"/>
-  <rect x="870" y="165" width="260" height="150" rx="22" fill="#fef3c7" stroke="#fcd34d" stroke-width="3"/>
-  <text x="1000" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#92400e">3. GHI NHỚ</text>
-  <text x="895" y="252" font-family="Arial, sans-serif" font-size="17" fill="#1e293b">Kết luận trực quan</text>
-  <text x="895" y="280" font-family="Arial, sans-serif" font-size="15" fill="#475569">Nhìn → hiểu → nhớ</text>
-  <rect x="70" y="375" width="1060" height="245" rx="22" fill="#fff" stroke="#cbd5e1" stroke-width="3"/>
-  <text x="100" y="425" font-family="Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a">Brief minh hoạ</text>
-  <foreignObject x="100" y="450" width="1000" height="130">
-    <div xmlns="http://www.w3.org/1999/xhtml" style="font:18px Arial,sans-serif;color:#334155;line-height:1.6;">${safe(brief)}</div>
-  </foreignObject>
-  <text x="100" y="600" font-family="Arial, sans-serif" font-size="15" fill="#64748b">Đây là sơ đồ dự phòng chạy cục bộ khi tài khoản chưa có quota tạo ảnh Gemini.</text>
-  <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
-</svg>`;
-      return { mimeType: 'image/svg+xml', data: svgToBase64Data(svg), prompt, localFallback: true };
-    }
-
-    // ============================================================================
-    // LOCAL EDUCATIONAL VISUALS — KHÔNG DÙNG QUOTA TẠO ẢNH
-    // Gemini chỉ quyết định NỘI DUNG cần minh hoạ; trình duyệt tự dựng SVG.
-    // ============================================================================
-    function isGeminiImageQuotaUnavailableError(err) {
-      const msg = String(err?.message || err || '');
-      return /free[_\s-]?tier|quota exceeded|limit:\s*0|generate_content_free_tier|resource.?exhausted/i.test(msg);
-    }
-
-    async function generateGeminiStudyImage(visualPrompt, sourceContext) {
-      // Giữ nguyên tên hàm để không phá các luồng cũ, nhưng tuyệt đối không gọi
-      // Gemini Image nữa. Đây là ảnh SVG được tạo ngay trên thiết bị, miễn phí.
-      return makeLocalEducationalImage(visualPrompt, sourceContext);
-    }
+    // Minh hoạ tự động trong Chat đã được tắt theo cấu hình người dùng.
+    function extractVisualPrompt(rawText) { return { text: String(rawText || ''), prompt: '' }; }
+    function deriveVisualPromptFromText(rawText) { return ''; }
+    function isVisualChatEligible(studioTask) { return false; }
+    function shouldAutoIllustrateAnswer(rawText) { return false; }
+    function buildAutomaticVisualBrief(rawText) { return ''; }
+    async function generateGeminiStudyImage(visualPrompt, sourceContext) { return null; }
 
     async function queryGemini(promptText, sourceContext, session = null, forcedTask = null, options = {}) {
       const apiKeys = getStoredGeminiApiKeys();
@@ -4500,16 +4367,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
 
           const result = await callGeminiWithApiKeyRotation(model, currentParts, contents, route, apiKeys);
           if (result?.text) {
-            if (options.withVisual && isVisualChatEligible(studioTask)) {
-              const visual = extractVisualPrompt(result.text);
-              const fallbackPrompt = visual.prompt || deriveVisualPromptFromText(result.text);
-              if (fallbackPrompt) {
-                const image = makeLocalEducationalImage(fallbackPrompt, sourceContext);
-                return { text: visual.prompt ? visual.text : result.text, image, imageError: null };
-              }
-              return { text: visual.text, image: null, imageError: null };
-            }
-            return options.returnMeta ? { text: result.text, image: null } : result.text;
+            return options.returnMeta ? { text: result.text } : result.text;
           }
           lastError = new Error('Không nhận được phản hồi từ AI.');
         } catch (err) {
@@ -5061,47 +4919,6 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
               typesetMathInElement(bubble);
             }
 
-            const cachedImages = Array.isArray(msg.images)
-              ? msg.images
-              : (msg.imageCacheKey && aiGeneratedImageCache.has(msg.imageCacheKey)
-                ? [aiGeneratedImageCache.get(msg.imageCacheKey)]
-                : []);
-            if (msg.imageError) {
-              const errNote = document.createElement('div');
-              errNote.className = 'gemini-ai-image-error';
-              errNote.textContent = `⚠️ Chưa tạo được minh hoạ: ${msg.imageError}`;
-              bubble.appendChild(errNote);
-            }
-
-            if (cachedImages.length) {
-              cachedImages.forEach(img => {
-                if (!img?.data || !img?.mimeType) return;
-                const wrap = document.createElement('div');
-                wrap.className = 'gemini-ai-image-wrap';
-
-                const image = document.createElement('img');
-                image.className = 'gemini-ai-image';
-                image.alt = 'Minh hoạ do AI tạo để hỗ trợ học tập';
-                image.loading = 'lazy';
-                image.src = `data:${img.mimeType};base64,${img.data}`;
-                image.addEventListener('click', () => {
-                  const win = window.open();
-                  if (win) {
-                    win.document.write(`<title>Minh hoạ học tập AI</title><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${image.src}" style="max-width:100%;max-height:100vh;object-fit:contain"></body>`);
-                    win.document.close();
-                  }
-                });
-
-                wrap.appendChild(image);
-                if (img.prompt) {
-                  const cap = document.createElement('div');
-                  cap.className = 'gemini-ai-image-caption';
-                  cap.textContent = img.localFallback ? '🧩 Minh hoạ học tập tạo ngay trên thiết bị • Không cần quota tạo ảnh' : '🖼️ Minh hoạ học tập';
-                  wrap.appendChild(cap);
-                }
-                bubble.appendChild(wrap);
-              });
-            }
           }
         } else {
           bubble.textContent = msg.text;
@@ -5123,44 +4940,10 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       const normalizedUserText = String(userText || '').trim();
       const task = forcedTask || detectGeminiStudioTask(normalizedUserText);
       const isArtifactTask = !!task && ['flashcards','quiz','mindmap','studyGuide','presentation','podcast','dataTable','infographic','videoStoryboard'].includes(task);
-      const isExplicitImageRequest = /^(?:tạo|vẽ|generate|create|make)\s*(?:ảnh|hình|image|illustration|diagram)|\b(?:tạo ảnh|vẽ ảnh|tạo hình|vẽ hình|generate image|create image|make an image)\b/i.test(normalizedUserText);
 
       session.messages.push({ role: 'user', text: normalizedUserText });
       saveData();
       renderGeminiStream(session);
-
-      // Người dùng có thể nói thẳng “tạo ảnh đi”. Lấy mô tả trực quan gần nhất
-      // từ câu trả lời trước thay vì gửi lại một yêu cầu văn bản khiến AI chỉ mô tả ảnh.
-      if (isExplicitImageRequest && !isArtifactTask) {
-        const previousBot = [...session.messages].reverse().find(m => m.role === 'bot' && !m.backgroundArtifact && (m.text || '').trim());
-        const visualPrompt = previousBot ? (extractVisualPrompt(previousBot.text).prompt || deriveVisualPromptFromText(previousBot.text)) : '';
-        const fallbackPrompt = visualPrompt || normalizedUserText;
-        const loadingRow = document.createElement('div');
-        loadingRow.className = 'gemini-bubble-row bot';
-        loadingRow.innerHTML = '<div class=\"gemini-bot-avatar-col\">✨</div><div class=\"gemini-bubble bot\" style=\"font-style:italic;opacity:.85;\">Đang tạo hình minh hoạ học tập… 🖼️</div>';
-        const stream = document.getElementById('geminiChatStream');
-        stream.appendChild(loadingRow);
-        stream.scrollTop = stream.scrollHeight;
-        try {
-          const image = makeLocalEducationalImage(fallbackPrompt, session.sourceContext);
-          loadingRow.remove();
-          const botMsg = { role: 'bot', text: 'Đây là hình minh hoạ trực quan được dựng ngay trên thiết bị, không cần quota tạo ảnh:' };
-          if (image?.data) {
-            const imageKey = `ai_img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-            aiGeneratedImageCache.set(imageKey, image);
-            botMsg.imageCacheKey = imageKey;
-          }
-          session.messages.push(botMsg);
-          saveData();
-          renderGeminiStream(session);
-        } catch (err) {
-          loadingRow.remove();
-          session.messages.push({ role: 'bot', text: `⚠️ Không thể dựng minh hoạ cục bộ: ${err?.message || err}` });
-          saveData();
-          renderGeminiStream(session);
-        }
-        return;
-      }
 
       if (isArtifactTask) {
         const tempMsg = {
@@ -5205,19 +4988,10 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       stream.scrollTop = stream.scrollHeight;
 
       try {
-        const result = await queryGemini(normalizedUserText, session.sourceContext, session, forcedTask, { withVisual: true, returnMeta: true });
+        const result = await queryGemini(normalizedUserText, session.sourceContext, session, forcedTask, { returnMeta: true });
         botLoadingRow.remove();
         const replyText = typeof result === 'string' ? result : (result?.text || '');
-        const replyImage = typeof result === 'string' ? null : (result?.image || null);
-        const replyImageError = typeof result === 'string' ? null : (result?.imageError || null);
         const botMsg = { role: 'bot', text: replyText };
-        if (replyImage?.data) {
-          const imageKey = `ai_img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
-          aiGeneratedImageCache.set(imageKey, replyImage);
-          botMsg.imageCacheKey = imageKey;
-        } else if (replyImageError) {
-          botMsg.imageError = replyImageError;
-        }
         session.messages.push(botMsg);
         saveData();
         renderGeminiStream(session);
@@ -7944,18 +7718,6 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
             if (Array.isArray(s.must_understand) && s.must_understand.length) html += `<div style="margin-top:8px;"><strong>Phải hiểu</strong><ul style="margin:5px 0 0 18px;">${s.must_understand.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
             if (Array.isArray(s.application_points) && s.application_points.length) html += `<div style="margin-top:8px;"><strong>Điểm áp dụng</strong><ul style="margin:5px 0 0 18px;">${s.application_points.map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`;
             html += `</article>`;
-          });
-          html += `</section>`;
-        }
-        if (Array.isArray(p.visual_learning_aids) && p.visual_learning_aids.length) {
-          html += `<section style="margin-top:14px;"><h3>Minh hoạ trực quan đề xuất</h3>`;
-          p.visual_learning_aids.forEach((x,i)=>{
-            html += `<article class="artifact-slide">
-              <div class="artifact-chip">${esc(x.visual_type || 'Minh hoạ')} ${i+1}</div>
-              <h4 style="margin-top:8px;">${esc(x.topic || '')}</h4>
-              ${x.description ? `<p style="margin-top:7px;line-height:1.55;">${esc(x.description)}</p>` : ''}
-              ${x.reason ? `<p style="margin-top:6px;color:var(--text-muted);"><strong>Hữu ích vì:</strong> ${esc(x.reason)}</p>` : ''}
-            </article>`;
           });
           html += `</section>`;
         }
