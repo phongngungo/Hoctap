@@ -3840,7 +3840,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       flashcards: 'GENERATE_COMPREHENSIVE_FLASHCARDS',
       quiz: 'GENERATE_PRACTICE_QUIZ',
       mindmap: 'EXTRACT_MINDMAP_ONTOLOGY',
-      studyGuide: 'CREATE_STUDY_GUIDE_AND_BRIEFING_DOC',
+      studyGuide: 'CREATE_COMPREHENSIVE_SCIENTIFIC_KNOWLEDGE_SUMMARY',
       presentation: 'GENERATE_PRESENTATION_DECK',
       podcast: 'GENERATE_DEEP_DIVE_PODCAST_SCRIPT',
       dataTable: 'EXTRACT_STRUCTURED_DATA_TABLES',
@@ -3902,10 +3902,10 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         output: 'json'
       },
       studyGuide: {
-        preferred: 'gemini-3.7-flash',
-        fallback: ['gemini-3.6-flash', 'gemini-3.5-flash-lite'],
-        temperature: 0.3,
-        output: 'markdown'
+        preferred: 'gemini-3.6-flash',
+        fallback: ['gemini-3.7-flash', 'gemini-3.5-flash', 'gemini-3.1-flash-lite'],
+        temperature: 0.2,
+        output: 'json'
       },
       videoStoryboard: {
         preferred: 'gemini-3.7-flash',
@@ -4096,7 +4096,10 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
             },
             body: JSON.stringify({
               systemInstruction: { parts: [{ text: GEMINI_MASTER_SYSTEM_INSTRUCTION }] },
-              generationConfig: { temperature: route.temperature ?? 0.2 },
+              generationConfig: {
+                ...(route.output === 'json' ? { responseMimeType: 'application/json' } : {}),
+                ...(route.temperature != null ? { temperature: route.temperature } : {})
+              },
               contents
             })
           });
@@ -4106,6 +4109,8 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
             const code = errData?.error?.status || '';
             const message = errData?.error?.message || `HTTP ${status}`;
             lastError = new Error(message);
+            lastError.status = status;
+            lastError.code = code;
             if (shouldRotateApiKey(status, code, message)) {
               markApiKeyTemporarilyExhausted(apiKey, model);
               const nextKey = keys[keyIndex + 1];
@@ -4268,7 +4273,10 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         } catch (err) {
           lastError = err instanceof Error ? err : new Error(String(err));
           const message = lastError.message || '';
-          const modelFailureMeansFallback = /quota|rate.?limit|resource.?exhausted|temporarily|unavailable|not found|failed to fetch|network|timeout|timed out|HTTP 5\d{2}|401|403/i.test(message);
+          const status = Number(lastError.status || 0);
+          const modelFailureMeansFallback =
+            [408, 409, 429, 500, 502, 503, 504].includes(status) ||
+            /quota|rate.?limit|resource.?exhausted|temporarily|unavailable|high demand|overloaded|capacity|try again later|not found|failed to fetch|network|timeout|timed out|HTTP 5\d{2}|401|403/i.test(message);
           if (modelFailureMeansFallback && modelIndex < routedModels.length - 1) {
             const nextModel = routedModels[modelIndex + 1];
             showToast(`⚡ ${model} không khả dụng trên các API hiện có → chuyển sang ${nextModel}`);
