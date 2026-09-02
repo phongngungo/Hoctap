@@ -696,6 +696,15 @@
       color: var(--text-muted);
       border-top: 1px solid var(--border);
     }
+    .gemini-ai-image-error {
+      margin-top: 10px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: var(--warning-bg);
+      color: var(--text-muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
 
     .gemini-chips-container {
       display: flex;
@@ -4229,13 +4238,43 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       return { text: cleanText, prompt: String(match[1] || '').trim() };
     }
 
+    // Một số model vẫn trả về mô tả ảnh dù không giữ marker <visual_prompt>.
+    // Fallback này biến chính mô tả đó thành prompt để người học vẫn nhận được ảnh.
+    function deriveVisualPromptFromText(rawText) {
+      const raw = String(rawText || '').trim();
+      if (!raw) return '';
+      const explicit = extractVisualPrompt(raw);
+      if (explicit.prompt) return explicit.prompt;
+
+      const cleaned = raw
+        .replace(/```[\s\S]*?```/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const patterns = [
+        /(?:graph diagram|diagram|illustration|visualization|schematic|educational figure)[^.!?]*(?:[.!?][^.!?]*)?/i,
+        /(?:mô tả sơ đồ trực quan|minh hoạ trực quan|minh họa trực quan|sơ đồ minh hoạ|sơ đồ minh họa)[\s:：-]*([\s\S]{30,1200})/i
+      ];
+      for (const re of patterns) {
+        const m = cleaned.match(re);
+        if (m) return String(m[0] || m[1] || '').trim();
+      }
+      return '';
+    }
+
     function isVisualChatEligible(studioTask) {
       return !studioTask;
     }
 
+    const GEMINI_IMAGE_MODELS = [
+      // Stable image-generation model hiện hành của Gemini.
+      'gemini-2.5-flash-image',
+      'gemini-3.1-flash-image'
+    ];
+
     async function generateGeminiStudyImage(visualPrompt, sourceContext, apiKeys) {
       const prompt = [
-        'Create one educational study illustration based ONLY on the supplied visual brief.',
+        'Create exactly one educational study illustration based ONLY on the supplied visual brief.',
         'The goal is to help a student understand and remember the concept, not to create decorative art.',
         'Use a clear educational layout: diagram, labelled illustration, flowchart, cross-section, timeline, process visualization, or practical real-world scene as appropriate.',
         'Prefer concise Vietnamese labels when labels are useful. Avoid inventing unsupported facts, numbers, names, measurements, or conclusions.',
@@ -4248,62 +4287,75 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
 
       let lastError = null;
       const keys = Array.isArray(apiKeys) ? apiKeys : [];
-      for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
-        const apiKey = keys[keyIndex];
-        if (!apiKey || isApiKeyTemporarilyExhausted(apiKey, 'gemini-3.1-flash-image')) continue;
-        try {
-          const endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent';
-          const res = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey
-            },
-            body: JSON.stringify({
-              contents: [{ role: 'user', parts: [{ text: prompt }] }],
-              generationConfig: {
-                responseModalities: ['IMAGE']
-              }
-            })
-          });
+      if (!keys.length) throw new Error('Chưa có API Key cho tính năng tạo ảnh.');
 
-          const errData = res.ok ? null : await res.json().catch(() => ({}));
-          if (!res.ok) {
-            const status = res.status;
-            const code = errData?.error?.status || '';
-            const message = errData?.error?.message || `HTTP ${status}`;
-            lastError = new Error(message);
-            lastError.status = status;
-            lastError.code = code;
-            if (shouldRotateApiKey(status, code, message)) {
-              markApiKeyTemporarilyExhausted(apiKey, 'gemini-3.1-flash-image');
+      for (const model of GEMINI_IMAGE_MODELS) {
+        for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+          const apiKey = keys[keyIndex];
+          if (!apiKey || isApiKeyTemporarilyExhausted(apiKey, model)) continue;
+          try {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+            const res = await fetch(endpoint, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': apiKey
+              },
+              body: JSON.stringify({
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                  responseModalities: ['IMAGE'],
+                  imageConfig: {
+                    aspectRatio: '16:9',
+                    imageSize: '1K'
+                  }
+                }
+              })
+            });
+
+            const errData = res.ok ? null : await res.json().catch(() => ({}));
+            if (!res.ok) {
+              const status = res.status;
+              const code = errData?.error?.status || '';
+              const message = errData?.error?.message || `HTTP ${status}`;
+              lastError = new Error(message);
+              lastError.status = status;
+              lastError.code = code;
+              if (shouldRotateApiKey(status, code, message)) {
+                markApiKeyTemporarilyExhausted(apiKey, model);
+                continue;
+              }
+              if ((status === 401 || status === 403 || status === 404) && keyIndex < keys.length - 1) continue;
+              // 404 trên model hiện tại -> thử model ảnh còn lại.
+              if ([404, 429, 500, 502, 503, 504].includes(status)) continue;
               continue;
             }
-            if ((status === 401 || status === 403) && keyIndex < keys.length - 1) continue;
-            throw lastError;
-          }
 
-          const data = await res.json();
-          const parts = data?.candidates?.[0]?.content?.parts || [];
-          const imagePart = parts.find(p => p?.inlineData?.data && /^image\//i.test(p.inlineData.mimeType || ''));
-          if (imagePart?.inlineData?.data) {
-            clearApiKeyQuotaState(apiKey, 'gemini-3.1-flash-image');
-            return {
-              mimeType: imagePart.inlineData.mimeType || 'image/png',
-              data: imagePart.inlineData.data,
-              prompt: visualPrompt
-            };
+            const data = await res.json();
+            const parts = data?.candidates?.[0]?.content?.parts || [];
+            const imagePart = parts.find(p => {
+              const part = p?.inlineData || p?.inline_data;
+              return part?.data && /^image\//i.test(part?.mimeType || part?.mime_type || '');
+            });
+            const rawImage = imagePart?.inlineData || imagePart?.inline_data;
+            if (rawImage?.data) {
+              clearApiKeyQuotaState(apiKey, model);
+              return {
+                mimeType: rawImage.mimeType || rawImage.mime_type || 'image/png',
+                data: rawImage.data,
+                prompt: visualPrompt,
+                model
+              };
+            }
+            lastError = new Error(`Model ${model} không trả về phần ảnh.`);
+          } catch (err) {
+            lastError = err instanceof Error ? err : new Error(String(err));
+            const msg = lastError.message || '';
+            if (/failed to fetch|network|timeout|timed out/i.test(msg)) continue;
           }
-          lastError = new Error('Gemini không trả về dữ liệu hình ảnh.');
-        } catch (err) {
-          lastError = err instanceof Error ? err : new Error(String(err));
-          const msg = lastError.message || '';
-          if (/failed to fetch|network|timeout|timed out/i.test(msg) && keyIndex < keys.length - 1) continue;
-          if (lastError.status && shouldRotateApiKey(lastError.status, lastError.code || '', msg)) continue;
-          if (keyIndex === keys.length - 1) throw lastError;
         }
       }
-      return null;
+      throw lastError || new Error('Không thể tạo hình ảnh từ Gemini.');
     }
 
     async function queryGemini(promptText, sourceContext, session = null, forcedTask = null, options = {}) {
@@ -4396,16 +4448,19 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
           if (result?.text) {
             if (options.withVisual && isVisualChatEligible(studioTask)) {
               const visual = extractVisualPrompt(result.text);
-              if (visual.prompt) {
+              const fallbackPrompt = visual.prompt || deriveVisualPromptFromText(result.text);
+              if (fallbackPrompt) {
                 let image = null;
+                let imageError = null;
                 try {
-                  image = await generateGeminiStudyImage(visual.prompt, sourceContext, apiKeys);
+                  image = await generateGeminiStudyImage(fallbackPrompt, sourceContext, apiKeys);
                 } catch (imageErr) {
+                  imageError = imageErr?.message || String(imageErr);
                   console.warn('AI visual generation warning:', imageErr);
                 }
-                return { text: visual.text, image };
+                return { text: visual.prompt ? visual.text : result.text, image, imageError };
               }
-              return { text: visual.text, image: null };
+              return { text: visual.text, image: null, imageError: null };
             }
             return options.returnMeta ? { text: result.text, image: null } : result.text;
           }
@@ -4964,6 +5019,13 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
               : (msg.imageCacheKey && aiGeneratedImageCache.has(msg.imageCacheKey)
                 ? [aiGeneratedImageCache.get(msg.imageCacheKey)]
                 : []);
+            if (msg.imageError) {
+              const errNote = document.createElement('div');
+              errNote.className = 'gemini-ai-image-error';
+              errNote.textContent = `⚠️ Chưa tạo được minh hoạ: ${msg.imageError}`;
+              bubble.appendChild(errNote);
+            }
+
             if (cachedImages.length) {
               cachedImages.forEach(img => {
                 if (!img?.data || !img?.mimeType) return;
@@ -5011,12 +5073,47 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       const session = state.aiSessions.find(s => s.id === state.activeAiSessionId);
       if (!session) return;
 
-      const task = forcedTask || detectGeminiStudioTask(userText);
+      const normalizedUserText = String(userText || '').trim();
+      const task = forcedTask || detectGeminiStudioTask(normalizedUserText);
       const isArtifactTask = !!task && ['flashcards','quiz','mindmap','studyGuide','presentation','podcast','dataTable','infographic','videoStoryboard'].includes(task);
+      const isExplicitImageRequest = /^(?:tạo|vẽ|generate|create|make)\s*(?:ảnh|hình|image|illustration|diagram)|\b(?:tạo ảnh|vẽ ảnh|tạo hình|vẽ hình|generate image|create image|make an image)\b/i.test(normalizedUserText);
 
-      session.messages.push({ role: 'user', text: userText });
+      session.messages.push({ role: 'user', text: normalizedUserText });
       saveData();
       renderGeminiStream(session);
+
+      // Người dùng có thể nói thẳng “tạo ảnh đi”. Lấy mô tả trực quan gần nhất
+      // từ câu trả lời trước thay vì gửi lại một yêu cầu văn bản khiến AI chỉ mô tả ảnh.
+      if (isExplicitImageRequest && !isArtifactTask) {
+        const previousBot = [...session.messages].reverse().find(m => m.role === 'bot' && !m.backgroundArtifact && (m.text || '').trim());
+        const visualPrompt = previousBot ? (extractVisualPrompt(previousBot.text).prompt || deriveVisualPromptFromText(previousBot.text)) : '';
+        const fallbackPrompt = visualPrompt || normalizedUserText;
+        const loadingRow = document.createElement('div');
+        loadingRow.className = 'gemini-bubble-row bot';
+        loadingRow.innerHTML = '<div class=\"gemini-bot-avatar-col\">✨</div><div class=\"gemini-bubble bot\" style=\"font-style:italic;opacity:.85;\">Đang tạo hình minh hoạ học tập… 🖼️</div>';
+        const stream = document.getElementById('geminiChatStream');
+        stream.appendChild(loadingRow);
+        stream.scrollTop = stream.scrollHeight;
+        try {
+          const image = await generateGeminiStudyImage(fallbackPrompt, session.sourceContext, getStoredGeminiApiKeys());
+          loadingRow.remove();
+          const botMsg = { role: 'bot', text: 'Đây là hình minh hoạ trực quan cho nội dung ngay trước đó:' };
+          if (image?.data) {
+            const imageKey = `ai_img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+            aiGeneratedImageCache.set(imageKey, image);
+            botMsg.imageCacheKey = imageKey;
+          }
+          session.messages.push(botMsg);
+          saveData();
+          renderGeminiStream(session);
+        } catch (err) {
+          loadingRow.remove();
+          session.messages.push({ role: 'bot', text: `⚠️ Không thể tạo ảnh: ${err?.message || err}` });
+          saveData();
+          renderGeminiStream(session);
+        }
+        return;
+      }
 
       if (isArtifactTask) {
         const tempMsg = {
@@ -5061,15 +5158,18 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
       stream.scrollTop = stream.scrollHeight;
 
       try {
-        const result = await queryGemini(userText, session.sourceContext, session, forcedTask, { withVisual: true, returnMeta: true });
+        const result = await queryGemini(normalizedUserText, session.sourceContext, session, forcedTask, { withVisual: true, returnMeta: true });
         botLoadingRow.remove();
         const replyText = typeof result === 'string' ? result : (result?.text || '');
         const replyImage = typeof result === 'string' ? null : (result?.image || null);
+        const replyImageError = typeof result === 'string' ? null : (result?.imageError || null);
         const botMsg = { role: 'bot', text: replyText };
         if (replyImage?.data) {
           const imageKey = `ai_img_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
           aiGeneratedImageCache.set(imageKey, replyImage);
           botMsg.imageCacheKey = imageKey;
+        } else if (replyImageError) {
+          botMsg.imageError = replyImageError;
         }
         session.messages.push(botMsg);
         saveData();
