@@ -670,7 +670,9 @@
       color: var(--text-main);
       border: 1px solid var(--border);
       border-bottom-left-radius: 4px;
-      max-width: 88%;
+      max-width: 96%;
+      min-width: 0;
+      overflow: hidden;
       box-shadow: var(--shadow-sm);
     }
 .gemini-chips-container {
@@ -854,6 +856,12 @@
     .artifact-option { width:100%; text-align:left; margin-top:7px; padding:9px 10px; border:1px solid var(--border); background:var(--surface); border-radius:10px; cursor:pointer; }
     .artifact-option.correct { border-color:var(--success); background:var(--success-bg); }
     .artifact-option.wrong { border-color:var(--danger); background:var(--danger-bg); }
+    .artifact-option.wrong { border-color:var(--danger); background:var(--danger-bg); }
+    .quiz-question-text .quiz-rich-content, .quiz-option-text .quiz-rich-content, .quiz-exp .quiz-rich-content { line-height:1.6; }
+    .quiz-question-text .math-inline, .quiz-option-text .math-inline, .quiz-exp .math-inline { display:inline-flex; align-items:center; vertical-align:middle; margin:0 2px; padding:0 2px; }
+    .quiz-option-text { display:inline; }
+    .artifact-option .quiz-rich-content p, .quiz-question-text .quiz-rich-content p { display:inline; margin:0; }
+    .artifact-option .MathJax, .quiz-question-text .MathJax, .quiz-exp .MathJax { max-width:100%; }
     .artifact-score { margin-top:12px; font-weight:850; }
     .artifact-note-input { width:100%; min-height:90px; margin-top:10px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; resize:vertical; font:inherit; background:var(--surface); color:var(--text-main); }
     .artifact-viewer-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
@@ -934,26 +942,131 @@
       transform: scale(0.9);
     }
 
-    /* Math and Markdown display */
+    /* Math + Markdown display — dễ đọc trên desktop lẫn Android/WebView */
     .math-display {
       background: var(--surface-soft);
       border: 1px solid var(--border);
-      padding: 10px 14px;
+      padding: 12px 14px;
       border-radius: var(--radius-sm);
       font-family: "Cambria Math", "Times New Roman", Georgia, serif;
-      font-size: 16px;
+      font-size: 17px;
       font-weight: 600;
       text-align: center;
-      margin: 10px 0;
-      color: var(--primary);
+      margin: 12px 0;
+      color: var(--text-main);
       box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .math-inline {
       font-family: "Cambria Math", "Times New Roman", Georgia, serif;
-      font-style: italic;
       font-weight: 600;
       color: var(--primary);
-      padding: 0 3px;
+      padding: 0 2px;
+    }
+
+    /* Nội dung AI: bảng thật, đoạn văn thật, không để lộ |---| của Markdown */
+    .ai-rich-content {
+      width: 100%;
+      min-width: 0;
+      font-size: 14.5px;
+      line-height: 1.72;
+      color: var(--text-main);
+      overflow-wrap: anywhere;
+    }
+    .ai-rich-content p { margin: 0 0 10px; }
+    .ai-rich-content > p:last-child { margin-bottom: 0; }
+    .ai-rich-content h2, .ai-rich-content h3, .ai-rich-content h4 {
+      color: var(--text-main);
+      line-height: 1.35;
+    }
+    .ai-rich-content h2 { margin: 15px 0 8px; font-size: 18px; font-weight: 850; }
+    .ai-rich-content h3 { margin: 14px 0 7px; font-size: 16px; font-weight: 850; }
+    .ai-rich-content h4 { margin: 12px 0 6px; font-size: 15px; font-weight: 800; }
+    .ai-rich-content hr { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
+    .ai-rich-content ul, .ai-rich-content ol { margin: 6px 0 11px 21px; padding: 0; }
+    .ai-rich-content li { margin: 4px 0; padding-left: 2px; }
+    .ai-rich-content blockquote {
+      margin: 10px 0;
+      padding: 8px 12px;
+      border-left: 3px solid var(--primary);
+      background: var(--primary-light);
+      border-radius: 0 9px 9px 0;
+      color: var(--text-muted);
+    }
+    .ai-rich-content code {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      word-break: break-word;
+    }
+    .ai-rich-content pre {
+      margin: 10px 0;
+      padding: 12px 14px;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 10px;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: pre;
+    }
+    .ai-table-wrap {
+      width: 100%;
+      margin: 11px 0 14px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+    .ai-rich-content table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .ai-rich-content th, .ai-rich-content td {
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 9px 11px;
+      text-align: left;
+      vertical-align: top;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+        .ai-rich-content .ai-markdown-table { min-width: 680px; }
+    .ai-rich-content .ai-markdown-table th:first-child { min-width: 150px; }
+    .ai-rich-content .ai-markdown-table td:first-child { font-weight: 700; color: var(--text-main); }
+    .ai-rich-content .math-display { display:block; margin:10px 0; padding:10px 12px; overflow-x:auto; overflow-y:hidden; text-align:center; background:var(--surface-soft); border:1px solid var(--border); border-radius:10px; }
+    .ai-rich-content .MathJax { max-width:100%; }
+    .ai-rich-content pre code { background:transparent; color:inherit; padding:0; font-size:inherit; }
+.ai-rich-content th {
+      background: var(--primary-light);
+      color: var(--text-main);
+      font-weight: 800;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .ai-rich-content tr:last-child td { border-bottom: 0; }
+    .ai-rich-content th:last-child, .ai-rich-content td:last-child { border-right: 0; }
+    .ai-rich-content tr:nth-child(even) td { background: color-mix(in srgb, var(--surface-soft) 42%, var(--surface)); }
+    .ai-circled {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 1.35em; height: 1.35em; border: 1.5px solid currentColor;
+      border-radius: 50%; font-size: .86em; line-height: 1; vertical-align: -.12em;
+      margin: 0 .08em;
+    }
+    @media(max-width:560px){
+      .ai-rich-content { font-size: 14px; }
+      .ai-rich-content table { font-size: 12.5px; }
+      .ai-rich-content th, .ai-rich-content td { padding: 8px 9px; }
     }
 
     /* ==========================================================================
@@ -1466,8 +1579,8 @@
     }
 
 /* FULLSCREEN ANKI-STYLE STUDY MODE */
-    .anki-study-overlay{position:fixed;inset:0;z-index:2000;display:none !important;flex-direction:column;background:var(--bg);color:var(--text-main);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);overflow:hidden}
-    .anki-study-overlay.active{display:flex}
+    .anki-study-overlay{position:fixed;inset:0;z-index:2000;display:none;flex-direction:column;background:var(--bg);color:var(--text-main);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);overflow:hidden}
+    .anki-study-overlay.active{display:flex !important}
     .anki-study-topbar{min-height:58px;padding:8px 14px;display:flex;align-items:center;gap:10px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
     .anki-close-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--surface-soft);color:var(--text-main);font-size:20px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;touch-action:manipulation;pointer-events:auto;position:relative;z-index:10}
     .anki-title-area{min-width:0;flex:1}.anki-session-title{font-size:14px;font-weight:800;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.anki-session-subtitle{font-size:11px;color:var(--text-muted);margin-top:1px}.anki-counter{min-width:58px;text-align:right;font-size:13px;font-weight:800;color:var(--primary)}
@@ -1485,6 +1598,9 @@
     .anki-back-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px}.anki-back-title{font-size:clamp(18px,3vw,26px);line-height:1.25;font-weight:800;word-break:break-word}
     .anki-level-badge{flex-shrink:0;padding:5px 9px;border-radius:999px;background:var(--primary-light);color:var(--primary);font-size:11px;font-weight:800}
     .anki-answer-box{font-size:clamp(15px,2vw,18px);line-height:1.72;white-space:pre-wrap;word-break:break-word;user-select:text;color:var(--text-main)}
+    .anki-front-title .ai-rich-content,.anki-back-title .ai-rich-content,.anki-answer-box .ai-rich-content{font-size:inherit;line-height:inherit;}
+    .anki-front-title .ai-rich-content p,.anki-back-title .ai-rich-content p,.anki-answer-box .ai-rich-content p{margin:0;}
+
     .anki-note-box{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--surface-soft);border:1px solid var(--border);color:var(--text-muted);font-size:13px}.anki-attachment{margin-top:14px}.anki-ai-btn{margin-top:auto;align-self:flex-start}
     .anki-answer-reveal{display:flex;justify-content:center;padding:8px 0 4px;flex-shrink:0}.anki-reveal-btn{width:min(560px,94vw);min-height:48px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text-main);font-size:14px;font-weight:800;cursor:pointer;box-shadow:var(--shadow-sm)}
     .anki-rating-panel{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:min(880px,94vw);margin:0 auto;padding-top:8px;flex-shrink:0}.anki-rating-btn{min-height:56px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text-main);cursor:pointer;font-weight:850;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}.anki-rating-btn:active{transform:scale(.97)}.anki-rating-btn small{font-size:10px;font-weight:700;color:var(--text-muted)}.anki-rating-again{border-color:rgba(239,68,68,.30)}.anki-rating-hard{border-color:rgba(245,158,11,.30)}.anki-rating-good{border-color:rgba(16,185,129,.30)}.anki-rating-easy{border-color:rgba(37,99,235,.30)}
@@ -1497,7 +1613,7 @@
 
   <canvas id="confettiCanvas"></canvas>
   <!-- FULLSCREEN ANKI-STYLE STUDY MODE -->
-  <section id="ankiStudyOverlay" class="anki-study-overlay" aria-hidden="true" style="display:none !important;">
+  <section id="ankiStudyOverlay" class="anki-study-overlay" aria-hidden="true">
     <div class="anki-study-topbar">
       <button type="button" id="ankiCloseBtn" class="anki-close-btn" aria-label="Thoát phiên học">✕</button>
       <div class="anki-title-area"><div id="ankiSessionTitle" class="anki-session-title">Phiên học</div><div id="ankiSessionSubtitle" class="anki-session-subtitle">Chạm vào thẻ để xem đáp án</div></div>
@@ -1626,10 +1742,10 @@
         </div>
 
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="startSmart10Btn" class="btn btn-primary" style="flex: 1; height: 44px;">
+          <button id="startSmart10Btn" class="btn btn-primary" style="flex: 1; height: 44px;" onclick="startSmart10Session()">
             ⚡ Bắt đầu phiên 10 bài tối ưu
           </button>
-          <button id="startSmartAllBtn" class="btn btn-secondary" style="height: 44px;">
+          <button id="startSmartAllBtn" class="btn btn-secondary" style="height: 44px;" onclick="startSmartAllSession()">
             Ôn tất cả
           </button>
         </div>
@@ -1638,7 +1754,7 @@
       <div id="todayErrorFocus" class="assistant-card" style="display:none; margin-bottom:16px;"></div>
       <div id="sessionBanner" class="session-banner">
         <span id="sessionStatusText">🎯 Đang trong phiên học 10 bài tối ưu</span>
-        <button id="cancelSessionBtn" class="btn btn-secondary btn-small" style="background:rgba(255,255,255,0.2); color:#fff; border:none;">✕ Thoát phiên</button>
+        <button id="cancelSessionBtn" class="btn btn-secondary btn-small" style="background:rgba(255,255,255,0.2); color:#fff; border:none;" onclick="cancelSmartSession()">✕ Thoát phiên</button>
       </div>
 
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -3151,51 +3267,304 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     /* ✨ GEMINI AI & FORMATTER */
     function formatAIResponse(text) {
       if (!text) return '';
-      let formatted = String(text);
+
+      let source = String(text).replace(/\r\n?/g, '\n').trim();
       const mathBlocks = [];
+      // Token nội bộ dùng ký tự Private Use Area để không đụng với
+      // @@MATH*NN@@ mà Gemini/WebView đôi khi tự sinh ra.
+      const INTERNAL_MATH_PREFIX = '\uE000PHONGMATH';
+      const INTERNAL_MATH_SUFFIX = '\uE001';
       const stashMath = (latex, display = false) => {
-        const token = `@@MATH_${mathBlocks.length}@@`;
-        mathBlocks.push({ token, latex: String(latex || '').trim(), display });
+        const token = `${INTERNAL_MATH_PREFIX}${mathBlocks.length}${INTERNAL_MATH_SUFFIX}`;
+        let cleanLatex = String(latex || '').trim();
+
+        // Dọn các mảnh LaTeX hay bị model/WebView làm lỗi.
+        cleanLatex = cleanLatex
+          .replace(/\\textcircled\s*(?:\{([^{}]{1,8})\}|([A-Za-z0-9]))/g, (_, a, b) => {
+            const ch = String(a ?? b ?? '').trim();
+            if (/^[A-Z]$/.test(ch)) return String.fromCodePoint(0x24B6 + ch.charCodeAt(0) - 65);
+            if (/^[a-z]$/.test(ch)) return String.fromCodePoint(0x24D0 + ch.charCodeAt(0) - 97);
+            if (/^[1-9]$/.test(ch)) return String.fromCodePoint(0x2460 + Number(ch) - 1);
+            if (ch === '0') return '⓪';
+            return `\\text{${ch}}`;
+          })
+          // Nếu LaTeX chứa placeholder cũ thì đưa về token nội bộ an toàn.
+          .replace(/@@MATH[_*](\d+)@@/g, `${INTERNAL_MATH_PREFIX}$1${INTERNAL_MATH_SUFFIX}`)
+          .replace(/@@\s*MATH\s*[_*]\s*(\d+)\s*@@/gi, `${INTERNAL_MATH_PREFIX}$1${INTERNAL_MATH_SUFFIX}`);
+
+        mathBlocks.push({ token, latex: cleanLatex, display });
         return token;
       };
 
-      // Bảo vệ LaTeX trước khi xử lý Markdown.
-      formatted = formatted.replace(/\$\$([\s\S]*?)\$\$/g, (_, f) => stashMath(f, true));
-      formatted = formatted.replace(/\\\[([\s\S]*?)\\\]/g, (_, f) => stashMath(f, true));
-      formatted = formatted.replace(/\$([^$\n]+)\$/g, (_, f) => stashMath(f, false));
-      formatted = formatted.replace(/\\\(([^\n]*?)\\\)/g, (_, f) => stashMath(f, false));
+      // Bảo vệ LaTeX chuẩn trước Markdown.
+      source = source.replace(/\$\$([\s\S]*?)\$\$/g, (_, f) => stashMath(f, true));
+      source = source.replace(/\\\[([\s\S]*?)\\\]/g, (_, f) => stashMath(f, true));
+      source = source.replace(/\$([^$\n]+)\$/g, (_, f) => stashMath(f, false));
+      source = source.replace(/\\\(([^\n]*?)\\\)/g, (_, f) => stashMath(f, false));
 
-      formatted = formatted
-        .replace(/^### (.*$)/gim, '<h4 style="font-size: 15px; font-weight: 700; margin: 10px 0 4px; color: var(--text-main);">$1</h4>')
-        .replace(/^## (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 800; margin: 12px 0 6px; color: var(--text-main);">$1</h3>')
-        .replace(/^# (.*$)/gim, '<h2 style="font-size: 17px; font-weight: 800; margin: 14px 0 6px; color: var(--text-main);">$1</h2>')
-        .replace(/^---$/gim, '<hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code style="background:rgba(0,0,0,0.08); padding:2px 6px; border-radius:4px; font-size:13px;">$1</code>')
-        .replace(/^\* (.*$)/gim, '<div style="margin-left: 8px; margin-bottom: 4px; display: flex; gap: 6px;"><span>•</span><span>$1</span></div>')
-        .replace(/^- (.*$)/gim, '<div style="margin-left: 8px; margin-bottom: 4px; display: flex; gap: 6px;"><span>•</span><span>$1</span></div>')
-        .replace(/\n/g, '<br>');
+      // Gemini đôi khi trả placeholder @@MATH*NN@@ / @@MATH_NN@@ như một artefact
+      // thay vì công thức thật. Các token này không có dữ liệu công thức tương ứng
+      // ở client, vì vậy phải loại khỏi giao diện thay vì để lộ mã kỹ thuật.
+      source = source
+        .replace(/@@\s*MATH\s*[_*]\s*\d+\s*@@/gi, ' ')
+        .replace(/\\<br\s*\/?\\>/gi, '\n')
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/\\textcircled\s*\{([^{}]{1,8})\}/g, (_, f) => `@@CIRCLED_${escapeHTML(String(f).trim())}@@`)
+        .replace(/@@MATH\*(\d+)@@/g, '@@MATH_$1@@');
 
-      for (const item of mathBlocks) {
-        const math = item.display ? `$$${item.latex}$$` : `$${item.latex}$`;
-        formatted = formatted.replace(item.token, math);
+      const escapeText = value => escapeHTML(String(value ?? ''));
+
+      const normalizeInlineArtifacts = value => {
+        let raw = String(value ?? '');
+        // Dọn prefix "svg" bị chèn trước inline-code/ký hiệu do một số model trả SVG-text.
+        raw = raw.replace(/(^|[\s|;(])svg(?=\s*(?:[`*_]|[-−+→↑↓]|[Ωμ𝑅𝑟𝑖𝑢𝑔𝑒𝑀𝑚𝑖𝑑𝑡𝑉𝑣𝑪𝑐𝑳𝑙𝑯𝑕𝑭𝑓𝑨𝑎𝑱𝑗]|[A-Za-z]))/gi, '$1');
+        raw = raw.replace(/@@\s*MATH\s*[_*]?\s*\d+\s*@@/gi, ' ');
+        return raw.replace(/@@CIRCLED_([^@]+)@@/g, (_, f) => `<span class="ai-circled">${escapeHTML(String(f))}</span>`);
+      };
+
+      const inline = value => {
+        let out = escapeText(normalizeInlineArtifacts(value));
+        out = out
+          .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+          .replace(/__(.+?)__/g, '<strong>$1</strong>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+          .replace(/(?<!_)_([^_\n]+)_(?!_)/g, '<em>$1</em>')
+          .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+          .replace(/\uE000PHONGMATH(\d+)\uE001/g, (_, i) => {
+            const item = mathBlocks[Number(i)];
+            return item
+              ? (item.display ? `<div class="math-display">$$${item.latex}$$</div>` : `$${item.latex}$`)
+              : '';
+          })
+          // Safety net cuối cùng: không bao giờ để @@MATH...@@ xuất hiện trong HTML.
+          .replace(/@@\s*MATH\s*[_*]?\s*\d+\s*@@/gi, '');
+        return out;
+      };
+
+      const splitTableCells = line => {
+        const raw = String(line || '').trim();
+        if (!raw.includes('|')) return [raw];
+        const body = raw.replace(/^\|/, '').replace(/\|$/, '');
+        const cells = [];
+        let current = '';
+        let escaped = false;
+        for (let i = 0; i < body.length; i++) {
+          const ch = body[i];
+          if (escaped) { current += ch; escaped = false; continue; }
+          if (ch === '\\') { current += ch; escaped = true; continue; }
+          if (ch === '|') { cells.push(current.trim().replace(/\\\|/g, '|')); current = ''; }
+          else current += ch;
+        }
+        cells.push(current.trim().replace(/\\\|/g, '|'));
+        return cells;
+      };
+
+      const isTableSeparator = line => {
+        const cells = splitTableCells(line);
+        return cells.length >= 2 && cells.every(cell => /^:?-{3,}:?$/.test(cell.trim()));
+      };
+
+      // Khôi phục bảng khi model gộp cả hàng tiêu đề vào 1 ô nhưng các hàng dữ liệu vẫn đủ 5 cột.
+      const repairCollapsedHeader = (headers, rows) => {
+        if (headers.length !== 1 || rows.length === 0) return headers;
+        const h = String(headers[0] || '')
+          .replace(/\*\*/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const known = [
+          'Phần tử lý tưởng',
+          'Ký hiệu / Sơ đồ',
+          'Đơn vị',
+          'Mô tả quan hệ dòng - áp',
+          'Hiện tượng năng lượng'
+        ];
+        const candidate = [];
+        let rest = h;
+        for (const label of known) {
+          const pos = rest.indexOf(label);
+          if (pos !== 0) return headers;
+          candidate.push(label);
+          rest = rest.slice(label.length);
+        }
+        return candidate;
+      };
+
+      const lines = source.split('\n');
+      const html = [];
+      let i = 0;
+
+      while (i < lines.length) {
+        const raw = lines[i];
+        const trimmed = raw.trim();
+        if (!trimmed) { i++; continue; }
+
+        // Markdown table chuẩn.
+        if (i + 1 < lines.length && trimmed.includes('|') && isTableSeparator(lines[i + 1])) {
+          let headers = splitTableCells(raw);
+          const rows = [];
+          i += 2;
+          while (i < lines.length) {
+            const r = lines[i].trim();
+            if (!r || !r.includes('|')) break;
+            if (isTableSeparator(r)) { i++; continue; }
+            rows.push(splitTableCells(r));
+            i++;
+          }
+
+          headers = repairCollapsedHeader(headers, rows);
+          const width = Math.max(headers.length, ...rows.map(r => r.length), 1);
+          if (headers.length < width) {
+            headers = headers.concat(Array.from({length: width - headers.length}, () => ''));
+          }
+
+          let table = '<div class="ai-table-wrap"><table class="ai-markdown-table"><thead><tr>';
+          headers.forEach(cell => { table += `<th>${inline(cell)}</th>`; });
+          table += '</tr></thead><tbody>';
+          rows.forEach(row => {
+            table += '<tr>';
+            for (let idx = 0; idx < width; idx++) table += `<td>${inline(row[idx] ?? '')}</td>`;
+            table += '</tr>';
+          });
+          table += '</tbody></table></div>';
+          html.push(table);
+          continue;
+        }
+
+        // Headings.
+        let m = trimmed.match(/^###\s+(.+)$/);
+        if (m) { html.push(`<h4>${inline(m[1])}</h4>`); i++; continue; }
+        m = trimmed.match(/^##\s+(.+)$/);
+        if (m) { html.push(`<h3>${inline(m[1])}</h3>`); i++; continue; }
+        m = trimmed.match(/^#\s+(.+)$/);
+        if (m) { html.push(`<h2>${inline(m[1])}</h2>`); i++; continue; }
+        if (/^---+$/.test(trimmed) || /^\*\*\*+$/.test(trimmed)) { html.push('<hr>'); i++; continue; }
+
+        // Quote.
+        if (/^>\s?/.test(trimmed)) {
+          const quote = [];
+          while (i < lines.length && /^>\s?/.test(lines[i].trim())) {
+            quote.push(lines[i].trim().replace(/^>\s?/, ''));
+            i++;
+          }
+          html.push(`<blockquote>${quote.map(inline).join('<br>')}</blockquote>`);
+          continue;
+        }
+
+        // Code block.
+        if (/^```/.test(trimmed)) {
+          const code = [];
+          i++;
+          while (i < lines.length && !/^```/.test(lines[i].trim())) { code.push(lines[i]); i++; }
+          if (i < lines.length) i++;
+          html.push(`<pre><code>${escapeText(code.join('\n'))}</code></pre>`);
+          continue;
+        }
+
+        // Lists.
+        if (/^(?:[-*]|\d+[.)])\s+/.test(trimmed)) {
+          const ordered = /^\d+[.)]\s+/.test(trimmed);
+          const items = [];
+          while (i < lines.length) {
+            const line = lines[i].trim();
+            const re = ordered ? /^\d+[.)]\s+(.+)$/ : /^[-*]\s+(.+)$/;
+            const mm = line.match(re);
+            if (!mm) break;
+            items.push(`<li>${inline(mm[1])}</li>`);
+            i++;
+          }
+          html.push(`<${ordered ? 'ol' : 'ul'}>${items.join('')}</${ordered ? 'ol' : 'ul'}>`);
+          continue;
+        }
+
+        // Paragraph.
+        const paragraph = [trimmed];
+        i++;
+        while (i < lines.length) {
+          const next = lines[i].trim();
+          if (!next || /^(?:#{1,3}\s|>|```|[-*]\s+|\d+[.)]\s+)/.test(next)) break;
+          if (i + 1 < lines.length && next.includes('|') && isTableSeparator(lines[i + 1])) break;
+          paragraph.push(next);
+          i++;
+        }
+        html.push(`<p>${paragraph.map(inline).join('<br>')}</p>`);
       }
-      return formatted;
+
+      return `<div class="ai-rich-content">${html.join('')}</div>`;
     }
 
     function typesetMathInElement(element) {
-      if (!element || !window.MathJax) return;
+      if (!element) return;
       const run = () => {
         try {
-          if (window.MathJax.typesetPromise) {
+          if (window.MathJax?.typesetPromise) {
             window.MathJax.typesetClear?.([element]);
             window.MathJax.typesetPromise([element]).catch(() => {});
+            return true;
           }
         } catch (_) {}
+        return false;
       };
-      if (window.MathJax.startup?.promise) window.MathJax.startup.promise.then(run).catch(() => {});
-      else setTimeout(run, 0);
+      // MathJax được tải async; nếu chưa sẵn sàng, đợi startup hoặc thử lại ngắn hạn.
+      if (run()) return;
+      let tries = 0;
+      const retry = () => {
+        if (!element.isConnected || tries++ > 40) return;
+        if (!run()) setTimeout(retry, 150);
+      };
+      if (window.MathJax?.startup?.promise) window.MathJax.startup.promise.then(run).catch(() => {});
+      setTimeout(retry, 0);
+    }
+
+    // Dùng chung bộ formatter Markdown + LaTeX cho mọi giao diện Flashcard.
+    // Hỗ trợ cả LaTeX có delimiter ($...$) và công thức bare-LaTeX do AI trả về.
+    // Chuẩn hóa LaTeX dạng trần trước khi đưa vào formatter chung.
+    // Hỗ trợ công thức nguyên dòng và ký hiệu/công thức nằm giữa câu.
+    function normalizeBareLatexForRichText(text) {
+      let s = String(text ?? '').replace(/\r\n?/g, '\n');
+      const lines = s.split('\n');
+      const latexCommand = /\\(?:frac|dfrac|tfrac|sqrt|sum|prod|int|lim|sin|cos|tan|log|ln|cdot|times|pm|mp|leq|geq|neq|approx|alpha|beta|gamma|delta|Delta|omega|Omega|varphi|phi|theta|mu|pi|rho|sigma|eta|lambda|epsilon|varepsilon|kappa|tau|xi|zeta|Gamma|Lambda|Sigma|Theta|operatorname|text)\b/;
+      const texSubSup = /\b[A-Za-z][A-Za-z0-9]*_(?:\{[^{}]+\}|[A-Za-z0-9]+)|\b[A-Za-z][A-Za-z0-9]*\^(?:\{[^{}]+\}|[A-Za-z0-9]+)/;
+
+      for (let i = 0; i < lines.length; i++) {
+        const original = lines[i];
+        const trimmed = original.trim();
+        if (!trimmed || /^\s*(?:[-*]|\d+[.)])\s+/.test(original) || /\$/.test(trimmed) || /`/.test(trimmed)) continue;
+
+        const hasCmd = latexCommand.test(trimmed);
+        const hasSubSup = texSubSup.test(trimmed);
+        const hasEquation = /\S\s*=\s*\S/.test(trimmed);
+        const hasComplex = /\\(?:frac|dfrac|tfrac|sqrt|sum|prod|int|lim|operatorname)\b/.test(trimmed);
+        const wordCount = (trimmed.match(/[A-Za-zÀ-ỹĐđ]{2,}/g) || []).length;
+
+        // Các dòng công thức như: U_{ctb} = \frac{U_{\max}}{\pi}
+        // được bọc toàn dòng để giữ nguyên toàn bộ cấu trúc toán học.
+        if ((hasCmd || hasSubSup) && (hasEquation || hasComplex) && wordCount <= 10) {
+          lines[i] = '$' + trimmed + '$';
+          continue;
+        }
+
+        let line = original;
+
+        // Bọc \frac/\sqrt khi công thức chỉ là một đoạn nằm trong câu.
+        line = line.replace(/\\(?:frac|dfrac|tfrac)\s*\{((?:[^{}]|\{[^{}]*\})*)\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g, m => `$${m}$`);
+        line = line.replace(/\\sqrt\s*(?:\[[^\]]+\])?\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g, m => `$${m}$`);
+
+        // Biến có chỉ số/mũ: U_{ctb}, U_{max}, x^2...
+        line = line.replace(/\b([A-Za-z][A-Za-z0-9]*(?:_(?:\{[^{}]+\}|[A-Za-z0-9]+)|\^(?:\{[^{}]+\}|[A-Za-z0-9]+))(?:_(?:\{[^{}]+\}|[A-Za-z0-9]+)|\^(?:\{[^{}]+\}|[A-Za-z0-9]+))*)/g, '$$$1$');
+
+        // Các lệnh ký hiệu đơn: \beta, \omega, \varphi...
+        line = line.replace(/\\(?:alpha|beta|gamma|delta|Delta|omega|Omega|varphi|phi|theta|mu|pi|rho|sigma|eta|lambda|epsilon|varepsilon|kappa|tau|xi|zeta|Gamma|Lambda|Sigma|Theta)\b/g, m => `$${m}$`);
+
+        lines[i] = line;
+      }
+      return lines.join('\n');
+    }
+
+    function formatRichMathText(text) {
+      const normalized = normalizeBareLatexForRichText(text);
+      const rendered = formatAIResponse(normalized);
+      return rendered.replace(/^<div class="ai-rich-content">/, '').replace(/<\/div>$/, '');
     }
 
     /* ======================================================================
@@ -3690,6 +4059,13 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
     5. SOURCE-AVAILABILITY CHECK: Nếu có ít nhất một tài liệu trong <source_documents> có nội dung thực tế, KHÔNG được nói "tài liệu không cung cấp thông tin" chỉ vì một tài liệu riêng lẻ không có dữ liệu liên quan. Chỉ kết luận nguồn không cung cấp thông tin sau khi đã kiểm tra toàn bộ tập tài liệu.
   </grounding_rules>
 
+  <output_integrity_rules>
+    1. CÔNG THỨC TOÁN: Khi câu trả lời có công thức, phương trình hoặc biểu thức toán, bắt buộc dùng LaTeX chuẩn với \(...\) cho công thức trong dòng và \[...\] hoặc $$...$$ cho công thức riêng dòng.
+    2. TUYỆT ĐỐI KHÔNG dùng, tạo, bắt chước hoặc lặp lại các token kỹ thuật dạng @@MATH...@@, @@MATH*...@@, @@MATH_...@@ hoặc placeholder tương tự.
+    3. Không thay công thức bằng mã nội bộ, số thứ tự, SVG-text hoặc chuỗi placeholder. Phải trả chính biểu thức toán thật.
+    4. Với ký hiệu vật lý như E, U, I, R_0 khi chúng là thành phần của công thức, hãy đặt chúng trong LaTeX, ví dụ \(E\), \(R_0\), \(U=E-R_0I\).
+  </output_integrity_rules>
+
   <pedagogical_standards>
     - Ứng dụng kỹ thuật Active Recall (Gợi nhớ chủ động) và Spaced Repetition (Lặp lại ngắt quãng).
     - Ứng dụng phương pháp Feynman: Đơn giản hóa các cơ chế phức tạp bằng ngôn từ trực diện, logic, sử dụng các phép tương phản và phân cấp rõ ràng.
@@ -4163,7 +4539,11 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
               systemInstruction: { parts: [{ text: GEMINI_MASTER_SYSTEM_INSTRUCTION }] },
               generationConfig: {
                 ...(route.output === 'json' ? { responseMimeType: 'application/json' } : {}),
-                ...(route.temperature != null ? { temperature: route.temperature } : {})
+                // Gemini 3.x hiện không còn nhận các sampling params như temperature.
+                // Gửi temperature cho các model này có thể trả HTTP 400: Request contains an invalid argument.
+                ...((route.temperature != null && !/^gemini-3(?:\.|$)/.test(model))
+                  ? { temperature: route.temperature }
+                  : {})
               },
               contents
             })
@@ -4375,8 +4755,8 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
           const message = lastError.message || '';
           const status = Number(lastError.status || 0);
           const modelFailureMeansFallback =
-            [408, 409, 429, 500, 502, 503, 504].includes(status) ||
-            /quota|rate.?limit|resource.?exhausted|temporarily|unavailable|high demand|overloaded|capacity|try again later|not found|failed to fetch|network|timeout|timed out|HTTP 5\d{2}|401|403/i.test(message);
+            [400, 408, 409, 429, 500, 502, 503, 504].includes(status) ||
+            /invalid argument|invalid_argument|quota|rate.?limit|resource.?exhausted|temporarily|unavailable|high demand|overloaded|capacity|try again later|not found|failed to fetch|network|timeout|timed out|HTTP 5\d{2}|401|403/i.test(message);
           if (modelFailureMeansFallback && modelIndex < routedModels.length - 1) {
             const nextModel = routedModels[modelIndex + 1];
             showToast(`⚡ ${model} không khả dụng trên các API hiện có → chuyển sang ${nextModel}`);
@@ -5541,7 +5921,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
         return `
           <div class="flashcard">
             <div class="fc-head">
-              <div class="fc-title">${escapeHTML(c.title)}</div>
+              <div class="fc-title">${formatRichMathText(c.title || '')}</div>
               <div style="display:flex; gap:6px; align-items:center;">
                 <button class="ai-btn-chip" onclick="createAndOpenAiSession('${escapeHTML(c.title)}', '${escapeHTML(c.content)}', '${escapeHTML(c.note || '')}')" title="Hỏi AI về kiến thức này">
                   <span>✨</span> Hỏi AI
@@ -5549,7 +5929,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
                 ${statusBadge}
               </div>
             </div>
-            <div class="fc-content">${escapeHTML(c.content)}</div>
+            <div class="fc-content">${formatRichMathText(c.content || '')}</div>
             ${renderAttachmentBadge(c.attachment)}
             ${c.note ? `<div class="fc-note">💡 ${escapeHTML(c.note)}</div>` : ''}
             <div class="fc-meta">
@@ -5563,6 +5943,7 @@ AIzaSy..." style="min-height:120px;resize:vertical;"></textarea>
           </div>
         `;
       }).join('');
+      typesetMathInElement(container);
     }
 
     function renderComingUp() {
@@ -7373,12 +7754,13 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
           <div class="flashcard-manage-item">
             <div class="flashcard-manage-main">
               <div class="flashcard-manage-title">${escapeHTML(c?.title || 'Flashcard')}</div>
-              <div class="flashcard-manage-meta">${escapeHTML(c?.content || '')}</div>
+              <div class="flashcard-manage-meta">${formatRichMathText(c?.content || '')}</div>
             </div>
             <button type="button" class="btn btn-danger-outline btn-small" onclick="deleteFlashcard('${escapeHTML(id)}')">🗑️ Xóa</button>
           </div>
         `;
       }).join('');
+      typesetMathInElement(list);
     }
 
     function deleteFlashcard(cardId) {
@@ -7471,7 +7853,6 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       document.documentElement.style.overflow = 'hidden';
       document.body.style.overflow = 'hidden';
       o.classList.add('active');
-      o.style.setProperty('display', 'flex', 'important');
       o.setAttribute('aria-hidden', 'false');
       document.getElementById('ankiSessionTitle').textContent=`Phiên học • ${valid.length} thẻ`;
       document.getElementById('ankiComplete').classList.remove('active');
@@ -7483,7 +7864,16 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       const s=state.studySession;if(!s.active)return;if(!s.queue.length){finishAnkiStudySession();return;}
       const card=getStudyCardById(s.queue[0]);if(!card){s.queue.shift();renderAnkiCurrentCard();return;}
       s.currentCardId=card.id;s.answered=false;document.getElementById('ankiCard').classList.remove('flipped');
-      document.getElementById('ankiFrontTitle').textContent=card.title||'Flashcard';document.getElementById('ankiBackTitle').textContent=card.title||'Đáp án';document.getElementById('ankiAnswerBox').textContent=card.content||'(Thẻ này chưa có nội dung.)';document.getElementById('ankiLevelBadge').textContent=`Lv.${card.level||0}`;
+      const frontEl=document.getElementById('ankiFrontTitle');
+      const backTitleEl=document.getElementById('ankiBackTitle');
+      const answerEl=document.getElementById('ankiAnswerBox');
+      frontEl.innerHTML=formatRichMathText(card.title||'Flashcard');
+      backTitleEl.innerHTML=formatRichMathText(card.title||'Đáp án');
+      answerEl.innerHTML=formatRichMathText(card.content||'(Thẻ này chưa có nội dung.)');
+      typesetMathInElement(frontEl);
+      typesetMathInElement(backTitleEl);
+      typesetMathInElement(answerEl);
+      document.getElementById('ankiLevelBadge').textContent=`Lv.${card.level||0}`;
       const n=document.getElementById('ankiNoteBox');n.style.display=card.note?'block':'none';n.textContent=card.note?`💡 ${card.note}`:'';
       const a=document.getElementById('ankiAttachmentBox');if(card.attachment&&card.attachment.attachmentId){a.style.display='block';a.innerHTML=renderAttachmentBadge(card.attachment)}else{a.style.display='none';a.innerHTML='';}
       document.getElementById('ankiAnswerReveal').style.display='flex';document.getElementById('ankiRatingPanel').style.display='none';
@@ -7500,7 +7890,6 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
 
       const o = document.getElementById('ankiStudyOverlay');
       o.classList.remove('active');
-      o.style.setProperty('display', 'none', 'important');
       o.setAttribute('aria-hidden','true');
 
       document.documentElement.style.overflow='';
@@ -7510,17 +7899,51 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
     }
 
     function gradeAnkiCard(grade){
-      const s=state.studySession;if(!s.active||!s.currentCardId||!s.answered){showToast('Hãy lật thẻ để xem đáp án trước.');return;}
-      const card=getStudyCardById(s.currentCardId);if(!card){s.queue.shift();renderAnkiCurrentCard();return;}
-      const today=DateUtils.today(),lvl=card.level||0;s.queue.shift();
-      if(grade==='again'){card.level=1;card.nextReview=DateUtils.addDays(today,1);card.incorrectCount=(card.incorrectCount||0)+1;card.reviewCount=(card.reviewCount||0)+1;state.todayCompleted++;state.history[today]=(state.history[today]||0)+1;addXP(5);s.queue.push(card.id);showToast('↻ Again — thẻ sẽ quay lại cuối phiên.');}
-      else if(grade==='hard'){card.nextReview=DateUtils.addDays(today,Math.max(1,Math.floor((SRS_INTERVALS[lvl]||1)*.5)));card.reviewCount=(card.reviewCount||0)+1;state.todayCompleted++;state.history[today]=(state.history[today]||0)+1;addXP(10);}
-      else if(grade==='good'){card.level=Math.min(5,lvl+1);card.nextReview=DateUtils.addDays(today,SRS_INTERVALS[lvl]||1);card.reviewCount=(card.reviewCount||0)+1;state.todayCompleted++;state.history[today]=(state.history[today]||0)+1;addXP(15);}
-      else if(grade==='easy'){card.level=Math.min(5,lvl+2);card.nextReview=DateUtils.addDays(today,Math.max(1,(SRS_INTERVALS[lvl]||1)*2));card.reviewCount=(card.reviewCount||0)+1;state.todayCompleted++;state.history[today]=(state.history[today]||0)+1;addXP(20);}
-      else{s.queue.unshift(card.id);return;}
+      const s=state.studySession;
+      if(!s.active||!s.currentCardId||!s.answered){showToast('Hãy lật thẻ để xem đáp án trước.');return false;}
+      if(s.grading) return false;
+      const allowed=new Set(['again','hard','good','easy']);
+      if(!allowed.has(grade)) return false;
+      s.grading=true;
+      const card=getStudyCardById(s.currentCardId);
+      if(!card){s.queue.shift();s.grading=false;renderAnkiCurrentCard();return false;}
+      const today=DateUtils.today(),lvl=card.level||0;
+      // Chốt trạng thái hiện tại trước khi render lại UI.
+      s.queue.shift();
+      if(grade==='again'){
+        card.level=1; card.nextReview=DateUtils.addDays(today,1);
+        card.incorrectCount=(card.incorrectCount||0)+1; card.reviewCount=(card.reviewCount||0)+1;
+        state.todayCompleted++; state.history[today]=(state.history[today]||0)+1; addXP(5);
+        s.queue.push(card.id);
+        showToast('↻ Again — thẻ sẽ quay lại cuối phiên.');
+      } else if(grade==='hard'){
+        card.nextReview=DateUtils.addDays(today,Math.max(1,Math.floor((SRS_INTERVALS[lvl]||1)*.5)));
+        card.reviewCount=(card.reviewCount||0)+1; state.todayCompleted++; state.history[today]=(state.history[today]||0)+1; addXP(10);
+      } else if(grade==='good'){
+        card.level=Math.min(5,lvl+1); card.nextReview=DateUtils.addDays(today,SRS_INTERVALS[lvl]||1);
+        card.reviewCount=(card.reviewCount||0)+1; state.todayCompleted++; state.history[today]=(state.history[today]||0)+1; addXP(15);
+      } else {
+        card.level=Math.min(5,lvl+2); card.nextReview=DateUtils.addDays(today,Math.max(1,(SRS_INTERVALS[lvl]||1)*2));
+        card.reviewCount=(card.reviewCount||0)+1; state.todayCompleted++; state.history[today]=(state.history[today]||0)+1; addXP(20);
+      }
       s.completed++;
-      if(state.smartSession.active){state.smartSession.completedInSession=Math.min(state.smartSession.limit,state.smartSession.completedInSession+1);state.smartSession.targetCards=state.smartSession.targetCards.filter(c=>c.id!==card.id);}
-      saveData();renderAll();if(!s.queue.length)finishAnkiStudySession();else renderAnkiCurrentCard();
+      if(state.smartSession.active){
+        state.smartSession.completedInSession=Math.min(state.smartSession.limit,state.smartSession.completedInSession+1);
+        state.smartSession.targetCards=state.smartSession.targetCards.filter(c=>c.id!==card.id);
+      }
+      // Lưu trước, sau đó chuyển sang thẻ kế tiếp ngay trong cùng frame.
+      saveData();
+      const nextCardExists = s.queue.length>0;
+      if(!nextCardExists){
+        s.grading=false;
+        finishAnkiStudySession();
+      } else {
+        requestAnimationFrame(()=>{
+          s.grading=false;
+          renderAnkiCurrentCard();
+        });
+      }
+      return true;
     }
 
     function finishAnkiStudySession(){
@@ -7528,40 +7951,67 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       const mins=Math.max(1,Math.round((Date.now()-(s.startedAt||Date.now()))/60000));document.getElementById('ankiSessionSubtitle').textContent=`Thời gian học khoảng ${mins} phút`;document.getElementById('ankiCompleteSub').textContent=`Bạn đã hoàn thành ${s.completed} lượt đánh giá trong phiên này.`+(s.completed>s.initialTotal?' Thẻ Again được lặp lại trong phiên.':'');state.smartSession.active=false;addXP(40);saveData();triggerConfetti(110);sendSystemNotification('🏆 HOÀN THÀNH PHIÊN HỌC!',`Bạn đã hoàn thành ${s.completed} lượt ôn tập.`);
     }
 
-    document.getElementById('ankiCard').addEventListener('click',()=>{if(!state.studySession.answered)flipAnkiCard();});
-    document.getElementById('ankiRevealBtn').addEventListener('click',e=>{e.stopPropagation();flipAnkiCard();});
-    document.querySelectorAll('#ankiRatingPanel .anki-rating-btn').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();gradeAnkiCard(e.currentTarget.dataset.grade);}));
-    document.getElementById('ankiAiBtn').addEventListener('click',e=>{e.stopPropagation();const c=getStudyCardById(state.studySession.currentCardId);if(c)createAndOpenAiSession(c.title||'',c.content||'',c.note||'');});
-    document.getElementById('ankiCloseBtn').addEventListener('click',()=>{ closeAnkiStudySession(); });
-    document.getElementById('ankiDoneBtn').addEventListener('click',closeAnkiStudySession);document.getElementById('ankiCloseDoneBtn').addEventListener('click',closeAnkiStudySession);
-    document.addEventListener('keydown',e=>{if(!state.studySession.active)return;const k=e.key.toLowerCase();if(k===' '||k==='enter'){e.preventDefault();if(!state.studySession.answered)flipAnkiCard();}else if(['1','2','3','4'].includes(k)&&state.studySession.answered){e.preventDefault();gradeAnkiCard({'1':'again','2':'hard','3':'good','4':'easy'}[k]);}else if(k==='escape'){e.preventDefault();document.getElementById('ankiCloseBtn').click();}});
+    window.flipAnkiCard = flipAnkiCard;
+    window.gradeAnkiCard = gradeAnkiCard;
+    window.closeAnkiStudySession = closeAnkiStudySession;
+    window.startSmart10Session = startSmart10Session;
+    window.startSmartAllSession = startSmartAllSession;
+    window.cancelSmartSession = cancelSmartSession;
 
-    /* STUDY ASSISTANT CONTROLS */
-    document.getElementById('startSmart10Btn').addEventListener('click', () => {
+    // ANKI STUDY EVENTS: một luồng duy nhất, tránh click/pointerup chạy trùng.
+    const ankiCardEl = document.getElementById('ankiCard');
+    const ankiOverlayEl = document.getElementById('ankiStudyOverlay');
+    if (ankiCardEl) ankiCardEl.addEventListener('click', e => {
+      if (e.target.closest('button,a')) return;
+      if (!state.studySession?.answered) flipAnkiCard();
+    });
+    if (ankiOverlayEl) ankiOverlayEl.addEventListener('pointerup', e => {
+      const reveal = e.target.closest('#ankiRevealBtn');
+      const grade = e.target.closest('#ankiRatingPanel [data-grade]');
+      const close = e.target.closest('#ankiCloseBtn,#ankiDoneBtn,#ankiCloseDoneBtn');
+      if (reveal) { e.preventDefault(); e.stopPropagation(); if(!state.studySession?.answered) flipAnkiCard(); return; }
+      if (grade) { e.preventDefault(); e.stopPropagation(); gradeAnkiCard(grade.dataset.grade); return; }
+      if (close) { e.preventDefault(); e.stopPropagation(); closeAnkiStudySession(); }
+    }, {passive:false});
+    const ankiAiBtnEl=document.getElementById('ankiAiBtn');
+    if (ankiAiBtnEl) ankiAiBtnEl.addEventListener('click',e=>{e.stopPropagation();const c=getStudyCardById(state.studySession.currentCardId);if(c)createAndOpenAiSession(c.title||'',c.content||'',c.note||'');});
+    document.addEventListener('keydown',e=>{
+      if(!state.studySession.active)return;
+      const k=e.key.toLowerCase();
+      if(k===' '||k==='enter'){e.preventDefault();if(!state.studySession.answered)flipAnkiCard();}
+      else if(['1','2','3','4'].includes(k)&&state.studySession.answered){e.preventDefault();gradeAnkiCard({'1':'again','2':'hard','3':'good','4':'easy'}[k]);}
+      else if(k==='escape'){e.preventDefault();closeAnkiStudySession();}
+    });
+
+    function startSmart10Session() {
       const queue = getSmartSortedQueue();
-      if (queue.length === 0) {
-        showToast('Bạn đã hoàn thành hết bài ôn tập hôm nay!');
-        return;
-      }
+      if (!queue.length) { showToast('Bạn đã hoàn thành hết bài ôn tập hôm nay!'); return; }
       state.smartSession.active = true;
       state.smartSession.limit = Math.min(10, queue.length);
       state.smartSession.completedInSession = 0;
       state.smartSession.targetCards = queue.slice(0, state.smartSession.limit);
       openAnkiStudySession(state.smartSession.targetCards);
       renderToday();
-    });
+    }
+    function startSmartAllSession() { state.smartSession.active = false; showToast('Đang hiển thị toàn bộ bài học theo thứ tự ưu tiên'); renderToday(); }
+    function cancelSmartSession() { state.smartSession.active = false; if (state.studySession?.active) closeAnkiStudySession(); else { showToast('Đã hủy phiên học'); renderToday(); } }
 
-    document.getElementById('startSmartAllBtn').addEventListener('click', () => {
-      state.smartSession.active = false;
-      showToast('Đang hiển thị toàn bộ bài học theo thứ tự ưu tiên');
-      renderToday();
-    });
-
-    document.getElementById('cancelSessionBtn').addEventListener('click', () => {
-      state.smartSession.active = false;
-      if (state.studySession && state.studySession.active) closeAnkiStudySession();
-      else { showToast('Đã hủy phiên học'); renderToday(); }
-    });
+    /* STUDY ASSISTANT CONTROLS */
+    document.addEventListener('click', e => {
+      if (e.target.closest('#startSmart10Btn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        startSmart10Session();
+      } else if (e.target.closest('#startSmartAllBtn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        startSmartAllSession();
+      } else if (e.target.closest('#cancelSessionBtn')) {
+        e.preventDefault();
+        e.stopPropagation();
+        cancelSmartSession();
+      }
+    }, true);
 
     /* TAB AI & GEMINI FULLSCREEN EVENTS */
     document.getElementById('startNewEmptyChatBtn').addEventListener('click', () => {
@@ -7689,7 +8139,7 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
         cards.forEach((c, i) => {
           const front = c.front ?? c.title ?? '';
           const back = c.back ?? c.content ?? '';
-          html += `<div class="artifact-flash-row" onclick="this.classList.toggle('revealed')"><div class="artifact-flash-front">${i+1}. ${escapeHTML(String(front))}</div><div class="artifact-flash-back">${escapeHTML(String(back))}</div></div>`;
+          html += `<div class="artifact-flash-row" onclick="this.classList.toggle('revealed')"><div class="artifact-flash-front">${i+1}. ${formatRichMathText(String(front))}</div><div class="artifact-flash-back">${formatRichMathText(String(back))}</div></div>`;
         });
         html += `<div class="artifact-viewer-actions"><button class="artifact-small-btn" onclick="importArtifactFlashcards('${artifact.id}')">＋ Nạp toàn bộ vào SRS</button></div>`;
       } else if (artifact.type === 'quiz') {
@@ -7763,6 +8213,7 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
 
       html += `<div class="artifact-viewer-actions"><button class="artifact-small-btn" onclick="addArtifactNote('${artifact.id}')">＋ Thêm ghi chú</button></div></div>`;
       main.innerHTML = html;
+      typesetMathInElement(main);
       document.getElementById('artifactViewer')?.classList.add('active');
       document.getElementById('artifactViewer')?.setAttribute('aria-hidden', 'false');
       closeStudioArtifacts();
@@ -7917,11 +8368,46 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
       showToast('Đã xóa Sổ lỗi');
     }
 
+    // Render nội dung Quiz bằng cùng bộ Markdown + MathJax như Chat AI.
+    // Trước đây Quiz dùng escapeHTML() trực tiếp nên $...$ / \( ... \)
+    // bị hiển thị nguyên văn thay vì được MathJax render.
+    function formatQuizText(text) {
+      let html = formatAIResponse(text);
+      // Question/option thường là một dòng. Chuyển khối công thức thành inline
+      // để giao diện Quiz không bị phá bố cục bởi một <div> bên trong nút.
+      html = html
+        .replace(/<div class="math-display">([\s\S]*?)<\/div>/g, '<span class="math-inline">$1</span>')
+        .replace(/<div class="ai-rich-content">/g, '<span class="quiz-rich-content">')
+        .replace(/<\/div>$/g, '</span>');
+      return html;
+    }
+
     function renderInteractiveQuiz(questions) {
       const root = document.getElementById('artifactQuizRoot');
       if (!root) return;
+      const list = Array.isArray(questions) ? questions : [];
       let score = 0;
-      root.innerHTML = questions.map((q, qi) => `<div class="artifact-quiz-q" data-qi="${qi}" data-correct="${escapeHTML(String(q.correct_answer || ''))}"><strong>Câu ${qi+1}. ${escapeHTML(String(q.question || ''))}</strong>${(q.options || []).map(o => `<button type="button" class="artifact-option" data-key="${escapeHTML(String(o.key || ''))}">${escapeHTML(String(o.key || ''))}. ${escapeHTML(String(o.text || ''))}</button>`).join('')}<div style="font-size:12px;color:var(--text-muted);margin-top:7px;display:none;" class="quiz-exp">${escapeHTML(String(q.explanation || ''))}</div></div>`).join('');
+
+      root.innerHTML = list.map((q, qi) => {
+        const questionHtml = formatQuizText(String(q.question || ''));
+        const options = Array.isArray(q.options) ? q.options : [];
+        const optionHtml = options.map(o =>
+          `<button type="button" class="artifact-option" data-key="${escapeHTML(String(o.key || ''))}">` +
+          `<span class="quiz-option-key">${escapeHTML(String(o.key || ''))}.</span> ` +
+          `<span class="quiz-option-text">${formatQuizText(String(o.text || ''))}</span>` +
+          `</button>`
+        ).join('');
+        const explanationHtml = formatQuizText(String(q.explanation || ''));
+        return `<div class="artifact-quiz-q" data-qi="${qi}" data-correct="${escapeHTML(String(q.correct_answer || ''))}">` +
+          `<strong class="quiz-question-text">Câu ${qi+1}. ${questionHtml}</strong>` +
+          optionHtml +
+          `<div style="font-size:12px;color:var(--text-muted);margin-top:7px;display:none;" class="quiz-exp">${explanationHtml}</div>` +
+          `</div>`;
+      }).join('');
+
+      // Bắt buộc typeset sau khi Quiz đã chèn HTML vào DOM.
+      typesetMathInElement(root);
+
       root.querySelectorAll('.artifact-quiz-q').forEach(qEl => {
         qEl.querySelectorAll('.artifact-option').forEach(btn => {
           btn.addEventListener('click', () => {
@@ -7932,7 +8418,7 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
             else {
               btn.classList.add('wrong');
               qEl.querySelector(`.artifact-option[data-key="${CSS.escape(correct)}"]`)?.classList.add('correct');
-              const questionText = qEl.querySelector('strong')?.textContent?.replace(/^Câu\s+\d+\.\s*/, '') || '';
+              const questionText = qEl.querySelector('.quiz-question-text')?.textContent?.replace(/^Câu\s+\d+\.\s*/, '') || '';
               const correctBtn = qEl.querySelector(`.artifact-option[data-key="${CSS.escape(correct)}"]`);
               recordStudyError({
                 type: 'quiz',
@@ -7951,10 +8437,13 @@ Hãy thực hiện tuần tự Bước 1 → Bước 2 → Bước 3. Không rú
             const done = root.querySelectorAll('.artifact-quiz-q[data-done="1"]').length;
             const scoreEl = document.getElementById('artifactQuizScore');
             if (scoreEl) scoreEl.textContent = `Kết quả: ${score}/${done} câu đã trả lời`;
+            // Explanation có thể chứa công thức nên typeset lại sau khi mở.
+            typesetMathInElement(qEl);
           });
         });
       });
     }
+
 
     function openArtifactViewerById(id) {
       const artifact = state.aiArtifacts.find(a => a.id === id);
